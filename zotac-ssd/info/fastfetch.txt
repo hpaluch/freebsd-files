@@ -1,0 +1,18 @@
+```                        `        ansible@fbsd-zot
+  ` `.....---.......--.```   -/     ----------------
+  +o   .--`         /y:`      +.    Host: ZBOX-CI327NANO-GS-01
+   yo`:.            :o      `+-     Kernel: FreeBSD 14.2-RELEASE-p1
+    y/               -/`   -o/      Uptime: 16 mins
+   .-                  ::/sy+:.     Packages: 728 (pkg)
+   /                     `--  /     Shell: sh
+  `:                          :`    Display (VG249Q3A): 1920x1080 @ 60 Hz in 24" [External]
+  `:                          :`    Terminal: tmux 3.5a
+   /                          /     CPU: Intel(R) Celeron(R) N3450 (4) @ 1.09 GHz
+   .-                        -.     GPU: Intel HD Graphics 500 [Integrated]
+    --                      -.      Memory: 621.34 MiB / 3.82 GiB (16%)
+     `:`                  `:`       Swap: 0 B / 13.00 GiB (0%)
+       .--             `--.         Disk (/): 25.76 GiB / 67.80 GiB (38%) - ufs
+          .---.....----.            Disk (/boot/efi): 59.62 MiB / 96.00 MiB (62%) - msdosfs
+                                    Local IP (bridge0): 192.168.0.50/24
+                                    Locale: C.UTF-8
+

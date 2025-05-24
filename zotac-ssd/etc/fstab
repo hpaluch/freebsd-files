@@ -1,0 +1,4 @@
+# Device	Mountpoint	FStype	Options	Dump	Pass#
+/dev/ada0p10	/		ufs	rw	1	1
+/dev/ada0p1	/boot/efi		msdosfs	rw	2	2
+/dev/ada0p11	none		swap	sw	0	0
