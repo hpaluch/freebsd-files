@@ -96,12 +96,16 @@ X11 Desktop environment (Xfce4) and favourite apps:
 
 ```shell
 pkg install xfce
+# essential xfce plugins
+pkg install xfce4-cpugraph-plugin xfce4-diskperf-plugin xfce4-netload-plugin
 # browsers + PDF viewer
 pkg install firefox-esr chromium evince-lite
 # audio and video player
 pkg install qmmp-qt5 mpv
 # password managers
 pkg install keepass keepassxc
+# some nice fonts
+pkg install terminus-font terminus-ttf
 ```
 
 Note: personally I prefer older Windows .NET `keepass` - it is more logical
