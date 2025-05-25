@@ -94,3 +94,5 @@ Ejecting USB device:
   where `-u 0` is USB  bus index (first number in `ugen0.6`), and `-a 6` is address (second number in `ugen0.6`).
 
 - as bonus you can even see power consumption!
+- NOTE: after `power_off` the `usbconfig list` will still show that device but this time with `pwr=OFF`
+
