@@ -68,3 +68,8 @@ You can find required things in 2 places:
   exit 0
   ```
 
+# Linux to FreeBSD glossary
+
+* show top with commands: `top -a`
+* show open tcp and udp sockets: `sockstat -46`
+
