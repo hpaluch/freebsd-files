@@ -100,7 +100,16 @@ pkg install xfce
 pkg install firefox-esr chromium evince-lite
 # audio and video player
 pkg install qmmp-qt5 mpv
+# password managers
+pkg install keepass keepassxc
 ```
+
+Note: personally I prefer older Windows .NET `keepass` - it is more logical
+organization than `keepassxc`, but some systems (Fedora) includes only new
+`keepasxc`, but I don't like it (using it only when old `keepass` is not
+available).
+
+
 Recommended: reboot system with `reboot`
 
 Then we can use:
