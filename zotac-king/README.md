@@ -13,6 +13,13 @@ Details:
 - you can find disk layout in [info/info-disk.txt](info/info-disk.txt)
 - important ZFS commands including history are in [info/info-zfs.txt](info/info-zfs.txt)
 
+Below is my new EFI boot entry:
+```shell
+root$ efibootmgr -v | fgrep King
+
++Boot0009* FreeBSD-King HD(1,GPT,a488a6ef-393c-11f0-a7a9-00012e7a5ff8,0x28,0x82000)/File(\EFI\FREEBSD\LOADER.EFI)
+```
+
 # Setup log
 
 I will try to describe all changes I did to be able to reproduce this setup later.
@@ -32,4 +39,10 @@ I installed several basic packages so I can manage this git repo:
   ```
 - I added my ordinary use to group `wheel` for that to work.
 
+
+Set readable font by adding to `/etc/rc.conf` - from: https://forums.freebsd.org/threads/how-to-make-vt-console-switch-to-the-default-terminus-bsd-font.67888/):
+```shell
+allscreens_flags="-f vgarom-16x32"
+```
+- note: above size is perfect on full HD HDMI monitor
 
