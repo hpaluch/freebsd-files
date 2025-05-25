@@ -12,6 +12,11 @@ Details:
 - `AutoZFS` layout, stripe with single disk Kingston SA480
 - you can find disk layout in [info/info-disk.txt](info/info-disk.txt)
 - important ZFS commands including history are in [info/info-zfs.txt](info/info-zfs.txt)
+- these two lines from `zfs history` are life-savers:
+  ```
+  zpool set bootfs=zroot/ROOT/default zroot
+  zpool set cachefile=/mnt/boot/zfs/zpool.cache zroot
+  ```
 
 Below is my new EFI boot entry:
 ```shell
