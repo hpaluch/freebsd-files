@@ -36,7 +36,7 @@ After reboot I had to fix swap partition name in `/etc/fstab`
 I installed several basic packages so I can manage this git repo:
 - installed
   ```shell
-  pkg install git-lite mc vim tmux doas
+  pkg install git-lite mc vim tmux doas lynx
   ```
 - created `/usr/local/etc/doas.conf` with:
   ```
