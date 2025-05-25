@@ -5,7 +5,8 @@ Here are my FreeBSD configuration files from various machines.
 List of machines:
 
 * [Zotac CI327NANO Samsung SSD](zotac-ssd/)
-* [Zotac CI327NANO Kingston SSD+ZFS](zotac-king/)
+* [Zotac CI327NANO Kingston SSD+ZFS](zotac-king/) - my new reference
+  installation (possibly replacing my "openSUSE LEAP with Xfce" in near future.
 
 # BHYVE examples
 
@@ -70,6 +71,7 @@ You can find required things in 2 places:
 
 # Linux to FreeBSD glossary
 
-* show top with commands: `top -a`
+* run `top` to show with command arguments - use `-a` instead of `-c`: `top -a`
 * show open tcp and udp sockets: `sockstat -46`
+* ps tree - use `d` instead of `f`, for example: `ps axd`
 
