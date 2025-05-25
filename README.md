@@ -75,3 +75,22 @@ You can find required things in 2 places:
 * show open tcp and udp sockets: `sockstat -46`
 * ps tree - use `d` instead of `f`, for example: `ps axd`
 
+Ejecting USB device:
+- from https://forums.freebsd.org/threads/usb-eject.58822/
+
+  ```shell
+  $ usbconfig list
+  
+  ugen0.1: <Intel XHCI root HUB> at usbus0, cfg=0 md=HOST spd=SUPER (5.0Gbps) pwr=SAVE (0mA)
+  ugen0.3: <Bluetooth wireless interface Intel Corp.> at usbus0, cfg=0 md=HOST spd=FULL (12Mbps) pwr=ON (100mA)
+  ugen0.4: <3-in-1 (SD/SDHC/SDXC) Card Reader Realtek Semiconductor Corp.> at usbus0, cfg=0 md=HOST spd=HIGH (480Mbps) pwr=ON (500mA)
+  ugen0.5: <JMS567 SATA 6Gb/s bridge JMicron Technology Corp. / JMicron USA Technology Corp.> at usbus0, cfg=0 md=HOST spd=SUPER (5.0Gbps) pwr=ON (2mA)
+  ugen0.6: <Ultra SanDisk Corp.> at usbus0, cfg=0 md=HOST spd=SUPER (5.0Gbps) pwr=ON (224mA)
+  ugen0.2: <PS/2 Keyboard+Mouse Adapter Chesen Electronics Corp.> at usbus0, cfg=0 md=HOST spd=LOW (1.5Mbps) pwr=ON (100mA)
+  
+  $ usbconfig -u 0 -a 6 power_off
+  ```
+  
+  where `-u 0` is USB  bus index (first number in `ugen0.6`), and `-a 6` is address (second number in `ugen0.6`).
+
+- as bonus you can even see power consumption!
