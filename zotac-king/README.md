@@ -51,3 +51,19 @@ allscreens_flags="-f vgarom-16x32"
 ```
 - note: above size is perfect on full HD HDMI monitor
 
+Installed ports and sources
+```shell
+curl -fLO https://download.freebsd.org/releases/amd64/14.2-RELEASE/ports.txz
+curl -fLO https://download.freebsd.org/releases/amd64/14.2-RELEASE/src.txz
+doas tar xpvf src.txz -C /
+doas tar xpvf ports.txz -C /
+```
+
+Updating base system:
+```shell
+# run as root:
+freebsd-update fetch
+freebsd-update install
+```
+
+
