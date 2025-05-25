@@ -1,0 +1,101 @@
++ camcontrol devlist
+<Samsung SSD 870 EVO 1TB SVT03B6Q>  at scbus0 target 0 lun 0 (pass0,ada0)
+<Generic- SD/MMC/MS PRO 1.00>      at scbus2 target 0 lun 0 (da0,pass1)
+<KINGSTON SA400S37480G 0425>       at scbus3 target 0 lun 0 (da1,pass2)
++ gpart list da1
+Geom name: da1
+modified: false
+state: OK
+fwheads: 255
+fwsectors: 63
+last: 937703047
+first: 40
+entries: 128
+scheme: GPT
+Providers:
+1. Name: da1p1
+   Mediasize: 272629760 (260M)
+   Sectorsize: 512
+   Stripesize: 4096
+   Stripeoffset: 0
+   Mode: r1w1e2
+   efimedia: HD(1,GPT,a488a6ef-393c-11f0-a7a9-00012e7a5ff8,0x28,0x82000)
+   rawuuid: a488a6ef-393c-11f0-a7a9-00012e7a5ff8
+   rawtype: c12a7328-f81f-11d2-ba4b-00a0c93ec93b
+   label: efiboot0
+   length: 272629760
+   offset: 20480
+   type: efi
+   index: 1
+   end: 532519
+   start: 40
+2. Name: da1p2
+   Mediasize: 524288 (512K)
+   Sectorsize: 512
+   Stripesize: 4096
+   Stripeoffset: 0
+   Mode: r0w0e0
+   efimedia: HD(2,GPT,a4ba6513-393c-11f0-a7a9-00012e7a5ff8,0x82028,0x400)
+   rawuuid: a4ba6513-393c-11f0-a7a9-00012e7a5ff8
+   rawtype: 83bd6b9d-7f41-11dc-be0b-001560b84f0f
+   label: gptboot0
+   length: 524288
+   offset: 272650240
+   type: freebsd-boot
+   index: 2
+   end: 533543
+   start: 532520
+3. Name: da1p3
+   Mediasize: 17179869184 (16G)
+   Sectorsize: 512
+   Stripesize: 4096
+   Stripeoffset: 0
+   Mode: r0w0e0
+   efimedia: HD(3,GPT,a50217da-393c-11f0-a7a9-00012e7a5ff8,0x82800,0x2000000)
+   rawuuid: a50217da-393c-11f0-a7a9-00012e7a5ff8
+   rawtype: 516e7cb5-6ecf-11d6-8ff8-00022d09712b
+   label: swap0
+   length: 17179869184
+   offset: 273678336
+   type: freebsd-swap
+   index: 3
+   end: 34088959
+   start: 534528
+4. Name: da1p4
+   Mediasize: 462649556992 (431G)
+   Sectorsize: 512
+   Stripesize: 4096
+   Stripeoffset: 0
+   Mode: r1w1e1
+   efimedia: HD(4,GPT,a54c0543-393c-11f0-a7a9-00012e7a5ff8,0x2082800,0x35dc0800)
+   rawuuid: a54c0543-393c-11f0-a7a9-00012e7a5ff8
+   rawtype: 516e7cba-6ecf-11d6-8ff8-00022d09712b
+   label: zfs0
+   length: 462649556992
+   offset: 17453547520
+   type: freebsd-zfs
+   index: 4
+   end: 937701375
+   start: 34088960
+Consumers:
+1. Name: da1
+   Mediasize: 480103981056 (447G)
+   Sectorsize: 512
+   Stripesize: 4096
+   Stripeoffset: 0
+   Mode: r2w2e5
+
++ gpart show da1
+=>       40  937703008  da1  GPT  (447G)
+         40     532480    1  efi  (260M)
+     532520       1024    2  freebsd-boot  (512K)
+     533544        984       - free -  (492K)
+     534528   33554432    3  freebsd-swap  (16G)
+   34088960  903612416    4  freebsd-zfs  (431G)
+  937701376       1672       - free -  (836K)
+
++ cat /etc/fstab
+# Device		Mountpoint	FStype	Options		Dump	Pass#
+/dev/gpt/efiboot0		/boot/efi	msdosfs	rw		2	2
+/dev/da1p3		none	swap	sw		0	0
++ exit 0

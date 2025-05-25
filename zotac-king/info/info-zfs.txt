@@ -1,0 +1,56 @@
++ zpool list
+NAME    SIZE  ALLOC   FREE  CKPOINT  EXPANDSZ   FRAG    CAP  DEDUP    HEALTH  ALTROOT
+zroot   428G   971M   427G        -         -     0%     0%  1.00x    ONLINE  -
++ zpool status
+  pool: zroot
+ state: ONLINE
+config:
+
+	NAME        STATE     READ WRITE CKSUM
+	zroot       ONLINE       0     0     0
+	  da1p4     ONLINE       0     0     0
+
+errors: No known data errors
++ zpool history
+History for 'zroot':
+2025-05-25.09:48:30 zpool create -o altroot=/mnt -O compress=lz4 -O atime=off -m none -f zroot da2p4
+2025-05-25.09:48:31 zfs create -o mountpoint=none zroot/ROOT
+2025-05-25.09:48:31 zfs create -o mountpoint=/ zroot/ROOT/default
+2025-05-25.09:48:32 zfs create -o mountpoint=/home zroot/home
+2025-05-25.09:48:33 zfs create -o mountpoint=/tmp -o exec=on -o setuid=off zroot/tmp
+2025-05-25.09:48:33 zfs create -o mountpoint=/usr -o canmount=off zroot/usr
+2025-05-25.09:48:34 zfs create -o setuid=off zroot/usr/ports
+2025-05-25.09:48:34 zfs create zroot/usr/src
+2025-05-25.09:48:35 zfs create -o mountpoint=/var -o canmount=off zroot/var
+2025-05-25.09:48:35 zfs create -o exec=off -o setuid=off zroot/var/audit
+2025-05-25.09:48:36 zfs create -o exec=off -o setuid=off zroot/var/crash
+2025-05-25.09:48:36 zfs create -o exec=off -o setuid=off zroot/var/log
+2025-05-25.09:48:37 zfs create -o atime=on zroot/var/mail
+2025-05-25.09:48:37 zfs create -o setuid=off zroot/var/tmp
+2025-05-25.09:48:38 zfs set mountpoint=/zroot zroot
+2025-05-25.09:48:38 zpool set bootfs=zroot/ROOT/default zroot
+2025-05-25.09:48:39 zpool set cachefile=/mnt/boot/zfs/zpool.cache zroot
+2025-05-25.09:48:39 zfs set canmount=noauto zroot/ROOT/default
+2025-05-25.09:54:23 zfs create -u zroot/home/aa
+2025-05-25.09:54:23 zfs set mountpoint=legacy zroot/home/aa
+2025-05-25.09:54:23 zfs allow aa create,destroy,mount,snapshot zroot/home/aa
+2025-05-25.09:54:23 zfs inherit mountpoint zroot/home/aa
+
++ zfs list
+NAME                 USED  AVAIL  REFER  MOUNTPOINT
+zroot                971M   414G    96K  /zroot
+zroot/ROOT           968M   414G    96K  none
+zroot/ROOT/default   968M   414G   968M  /
+zroot/home           472K   414G    96K  /home
+zroot/home/aa        376K   414G   376K  /home/aa
+zroot/tmp            104K   414G   104K  /tmp
+zroot/usr            288K   414G    96K  /usr
+zroot/usr/ports       96K   414G    96K  /usr/ports
+zroot/usr/src         96K   414G    96K  /usr/src
+zroot/var            636K   414G    96K  /var
+zroot/var/audit       96K   414G    96K  /var/audit
+zroot/var/crash       96K   414G    96K  /var/crash
+zroot/var/log        148K   414G   148K  /var/log
+zroot/var/mail       104K   414G   104K  /var/mail
+zroot/var/tmp         96K   414G    96K  /var/tmp
++ exit 0
