@@ -1,0 +1,5 @@
+# Device		Mountpoint	FStype	Options		Dump	Pass#
+/dev/nda0p1		/efi	msdosfs rw 0 0
+/dev/da1p3		none	swap	sw		0	0
+192.168.0.3:/i-data/0e5cf602/nfs/data /nfs nfs	rw,noauto 0 0
+

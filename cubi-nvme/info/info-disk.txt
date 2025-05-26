@@ -1,0 +1,83 @@
++ camcontrol devlist
+<Samsung SSD 870 QVO 1TB SVQ02B6Q>  at scbus0 target 0 lun 0 (pass0,ada0)
+<GIGABYTE AG450E500G-G ELFMB0.6>   at scbus2 target 0 lun 1 (pass1,nda0)
++ gpart list nda0
+Geom name: nda0
+modified: false
+state: OK
+fwheads: 255
+fwsectors: 63
+last: 976773134
+first: 34
+entries: 128
+scheme: GPT
+Providers:
+1. Name: nda0p1
+   Mediasize: 536870912 (512M)
+   Sectorsize: 512
+   Stripesize: 0
+   Stripeoffset: 1048576
+   Mode: r1w1e1
+   efimedia: HD(1,GPT,da572218-769b-4d2f-af59-a193be758a66,0x800,0x100000)
+   rawuuid: da572218-769b-4d2f-af59-a193be758a66
+   rawtype: c12a7328-f81f-11d2-ba4b-00a0c93ec93b
+   label: EFI System Partition
+   length: 536870912
+   offset: 1048576
+   type: efi
+   index: 1
+   end: 1050623
+   start: 2048
+2. Name: nda0p2
+   Mediasize: 399431958528 (372G)
+   Sectorsize: 512
+   Stripesize: 0
+   Stripeoffset: 537919488
+   Mode: r0w0e0
+   efimedia: HD(2,GPT,4ea0c28c-293e-4947-b398-d93c6fb43447,0x100800,0x2e800000)
+   rawuuid: 4ea0c28c-293e-4947-b398-d93c6fb43447
+   rawtype: 0fc63daf-8483-4772-8e79-3d69d8477de4
+   label: (null)
+   length: 399431958528
+   offset: 537919488
+   type: linux-data
+   index: 2
+   end: 781191167
+   start: 1050624
+3. Name: nda0p3
+   Mediasize: 100137959424 (93G)
+   Sectorsize: 512
+   Stripesize: 0
+   Stripeoffset: 399969878016
+   Mode: r1w1e1
+   efimedia: HD(3,GPT,73bb9883-325c-4069-8118-1e87d76633d0,0x2e900800,0xba85800)
+   rawuuid: 73bb9883-325c-4069-8118-1e87d76633d0
+   rawtype: 516e7cba-6ecf-11d6-8ff8-00022d09712b
+   label: (null)
+   length: 100137959424
+   offset: 399969878016
+   type: freebsd-zfs
+   index: 3
+   end: 976773119
+   start: 781191168
+Consumers:
+1. Name: nda0
+   Mediasize: 500107862016 (466G)
+   Sectorsize: 512
+   Mode: r2w2e4
+
++ gpart show nda0
+=>       34  976773101  nda0  GPT  (466G)
+         34       2014        - free -  (1.0M)
+       2048    1048576     1  efi  (512M)
+    1050624  780140544     2  linux-data  (372G)
+  781191168  195581952     3  freebsd-zfs  (93G)
+  976773120         15        - free -  (7.5K)
+
++ cat /etc/fstab
+# Device		Mountpoint	FStype	Options		Dump	Pass#
+/dev/nda0p1		/efi	msdosfs rw 0 0
+/dev/da1p3		none	swap	sw		0	0
+192.168.0.3:/i-data/0e5cf602/nfs/data /nfs nfs	rw,noauto 0 0
+
++ exit 0

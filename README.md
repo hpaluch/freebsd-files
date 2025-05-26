@@ -4,6 +4,7 @@ Here are my FreeBSD configuration files from various machines.
 
 List of machines:
 
+* [Cubi MSI w NVMeSSD ](cubi-nvme/) - my latest workstation
 * [Zotac CI327NANO Samsung SSD](zotac-ssd/)
 * [Zotac CI327NANO Kingston SSD+ZFS](zotac-king/) - my new reference
   installation (possibly replacing my "openSUSE LEAP with Xfce" in near future.

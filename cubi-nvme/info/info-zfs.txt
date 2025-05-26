@@ -1,0 +1,39 @@
++ zpool list
+NAME   SIZE  ALLOC   FREE  CKPOINT  EXPANDSZ   FRAG    CAP  DEDUP    HEALTH  ALTROOT
+cbsd    93G  6.21G  86.8G        -         -     0%     6%  1.00x    ONLINE  -
++ zpool status
+  pool: cbsd
+ state: ONLINE
+config:
+
+	NAME        STATE     READ WRITE CKSUM
+	cbsd        ONLINE       0     0     0
+	  nda0p3    ONLINE       0     0     0
+
+errors: No known data errors
++ zpool history
+History for 'cbsd':
+2025-05-26.16:22:25 zpool create -o altroot=/mnt -O compress=on -O atime=off -m none cbsd nda0p3
+2025-05-26.16:27:32 zfs recv -F cbsd
+2025-05-26.16:29:34 zpool set bootfs=cbsd/ROOT/default cbsd
+2025-05-26.16:30:12 zpool export cbsd
+
++ zfs list
+NAME                                       USED  AVAIL  REFER  MOUNTPOINT
+cbsd                                      6.21G  83.9G    24K  /zroot
+cbsd/ROOT                                 5.21G  83.9G    24K  none
+cbsd/ROOT/14.2-RELEASE_2025-05-25_150923     0B  83.9G   992M  /
+cbsd/ROOT/default                         5.21G  83.9G  5.17G  /
+cbsd/home                                  107M  83.9G    24K  /home
+cbsd/home/aa                               107M  83.9G   106M  /home/aa
+cbsd/tmp                                   262K  83.9G   242K  /tmp
+cbsd/usr                                   908M  83.9G    24K  /usr
+cbsd/usr/ports                             244M  83.9G   244M  /usr/ports
+cbsd/usr/src                               664M  83.9G   664M  /usr/src
+cbsd/var                                   360K  83.9G    24K  /var
+cbsd/var/audit                              24K  83.9G    24K  /var/audit
+cbsd/var/crash                              24K  83.9G    24K  /var/crash
+cbsd/var/log                               220K  83.9G   140K  /var/log
+cbsd/var/mail                               30K  83.9G    30K  /var/mail
+cbsd/var/tmp                                38K  83.9G    24K  /var/tmp
++ exit 0
