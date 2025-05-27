@@ -41,6 +41,12 @@ mount /nfs # details in /etc/fstab
 mkdir /nfs/fbsd-zotac-king
 zfs snapshot -r zroot@migrate
 zfs send -Rc zroot@migrate | gzip -1c > /nfs/fbsd-zotac-king/zfs-backup.bin.gz
+# remove snapshot zroot@migrate on Source machine
+# if you no longer need it:
+# dry run:
+zfs destroy -rvn zroot@migrate
+# real removal (without -n):
+zfs destroy -rv zroot@migrate
 sync
 umount /nfs                                                                            
 ```
