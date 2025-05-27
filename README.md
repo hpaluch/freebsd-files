@@ -1,6 +1,7 @@
 # My FreeBSD files
 
-Here are my FreeBSD configuration files from various machines.
+Here are my FreeBSD configuration files from various machines. As of `May 2025` I
+use FreeBSD 14.2.
 
 List of machines:
 
@@ -70,10 +71,11 @@ You can find required things in 2 places:
   exit 0
   ```
 
-# Linux to FreeBSD glossary
+# Linux to FreeBSD notes
 
 * run `top` to show with command arguments - use `-a` instead of `-c`: `top -a`
-* show open tcp and udp sockets: `sockstat -46`
+* show open tcp and udp sockets: `sockstat -46s` (small `-s` will show socket status,
+  like netstat on Linux)
 * ps tree - use `d` instead of `f`, for example: `ps axd`
 
 ## Ejecting USB device:
@@ -93,15 +95,15 @@ ugen0.2: <PS/2 Keyboard+Mouse Adapter Chesen Electronics Corp.> at usbus0, cfg=0
 $ usbconfig -u 0 -a 6 power_off
 ```
 
-where `-u 0` is USB  bus index (first number in `ugen0.6`), and `-a 6` is address (second number in `ugen0.6`).
+Where `-u 0` is USB  bus index (first number in `ugen0.6`), and `-a 6` is address (second number in `ugen0.6`).
 
 - as bonus you can even see power consumption!
 - NOTE: after `power_off` the `usbconfig list` will still show that device but this time with `pwr=OFF`
 
 ## List installed packages
 
-There exist command to list only installed packaages but without
-automatic dependencies:
+There exists command to list only installed packages but without
+automatic dependencies (exactly what I want):
 
 ```shell
 pkg prime-list
@@ -128,6 +130,7 @@ Requirements:
 - install at least: `pkg install fusefs-ext2`
 
 Now find proper device name (I want to mount Linux partition from NVMe):
+
 ```shell
 root# camcontrol devlist
 
@@ -135,7 +138,7 @@ root# camcontrol devlist
 <GIGABYTE AG450E500G-G ELFMB0.6>   at scbus2 target 0 lun 1 (pass1,nda0)
 ```
 
-So my NVMe is `nda0`
+My NVMe is `nda0`
 
 Now find partition names on `nda0`:
 ```shell
@@ -160,4 +163,67 @@ root# fuse-ext2 -o ro /dev/nda0p2 /mnt/suse
 ```
 
 To read-only mount my existing `ext4` partition under `/mnt/suse`.
+
+## Connecting MTP Device - Kindle Fire tablet
+
+Note:
+
+- in the past most devices pretended to be `USB Mass storage` (including e-ink
+  Kindle 3). However it caused lot of issues, because PC would directly modify
+  it as block device - meaning that it could modify filesystem in way that was
+  unsupported by Device or even reformat it to completely unsupported filesystem.
+  Also it was not possible for Device to safely access storage while connected
+  to Host PC and/or detect changed objects (directories, files) on such storage.
+
+  It was such pain that some Sony movie cameras allowed read-only access from PC
+  (only Camera was allowed to format SD card or write new files to SD card).
+
+- so new `MTP device` class was created where PC issues filesystem object
+  operations, but no longer has direct access to block storage. This allows for
+  safety checks on Device and to easily detect modified files on Device storage.
+
+You need to do for the first time:
+- have loaded `fusefs` module - see previous section for instructions
+- install: `pkg install fusefs-jmtpfs`
+- create mount point: `mkdir -p /mnt/fire`
+
+Next you need to just:
+- connect tablet to PC
+- verify that tablet was found with `usbconfig list`
+- mount it with simple command:
+
+```shell
+root# jmtpfs /mnt/fire/
+
+Device 0 (VID=1949 and PID=0008) is a Amazon Kindle Fire (ID2).
+Android device detected, assigning default bug flags```
+
+root# ls -l /mnt/fire
+
+total 0
+drwxr-xr-x  21 root wheel 0 bad date val Internal storage
+```
+
+Don't be scared with `bad date val` - important is `Internal storage`
+which is accessible folder on Tablet.
+
+Here is example, how I copied PDF to Tablet:
+```shell
+root# cp ~USERNAME/Documents/articles/freebsd/zfs-cheatsheet-en.pdf \
+   /mnt/fire/Internal\ storage/Documents/
+```
+
+You can verify on Kindle "Newsstand" view that Document was really uploaded.
+
+Finally remember to cleanly unmount and disconnect tablet:
+
+```shell
+root# umount /mnt/fire/
+root# usbconfig list | fgrep Fire
+
+ugen1.10: <Amazon Kindle Fire HD 8.9" Lab126, Inc.> at usbus1, cfg=0 md=HOST spd=HIGH (480Mbps) pwr=ON (2mA)
+
+root# usbconfig -u 1 -a 10 power_off
+```
+And disconnect tablet.
 
