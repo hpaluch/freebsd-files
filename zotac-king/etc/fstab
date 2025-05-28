@@ -1,3 +1,5 @@
 # Device		Mountpoint	FStype	Options		Dump	Pass#
 /dev/gpt/efiboot0		/boot/efi	msdosfs	rw		2	2
 /dev/da1p3		none	swap	sw		0	0
+192.168.0.3:/i-data/0e5cf602/nfs/data /mnt/nfs nfs	rw,noauto 0 0
+
