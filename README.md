@@ -12,6 +12,9 @@ List of machines:
 
 # BHYVE examples
 
+New: Direct Linux guest loading using `grub2-bhyve` -
+see [zotac-king/opt/images/trac-dr](zotac-king/opt/images/trac-dr) folder for example.
+
 You can find required things in 2 places:
 
 - bridged network card with `tap0,1,2` devices in [zotac-ssd/etc/rc.conf](zotac-ssd/etc/rc.conf)
