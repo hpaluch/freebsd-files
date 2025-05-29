@@ -12,7 +12,10 @@ List of machines:
 
 # Common files
 
-See [patches/](patches/) for common changes that I apply on all FreeBSD systems.
+Complete comon file tree is under [common-tree/](common-tree/).
+
+Some chages are also under [patches/](patches/) to better understand
+what exactly changed.
 
 - enable UTF-8 in Lynx browser output (by default Lynx expects ISO-8859-1
   output terminal), see
