@@ -1,0 +1,11 @@
+--- usr/local/etc/lynx.cfg.orig	2025-05-29 17:01:58.998036000 +0200
++++ usr/local/etc/lynx.cfg	2025-05-29 17:02:22.289014000 +0200
+@@ -454,7 +454,7 @@
+ # Find RFC 1345 at
+ .url http://tools.ietf.org/html/rfc1345
+ #
+-#CHARACTER_SET:iso-8859-1
++CHARACTER_SET:utf-8
+ 
+ .h2 LOCALE_CHARSET
+ # LOCALE_CHARSET overrides CHARACTER_SET if true, using the current locale to

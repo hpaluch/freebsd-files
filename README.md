@@ -10,6 +10,21 @@ List of machines:
 * [Zotac CI327NANO Kingston SSD+ZFS](zotac-king/) - my new reference
   installation (possibly replacing my "openSUSE LEAP with Xfce" in near future.
 
+# Common files
+
+See [patches/](patches/) for common changes that I apply on all FreeBSD systems.
+
+- enable UTF-8 in Lynx browser output (by default Lynx expects ISO-8859-1
+  output terminal), see
+  [patches/lynx-enable-utf8.patch](patches/lynx-enable-utf8.patch).  I verified
+  this setup with following line in `/etc/rc.conf` to have local console with
+  clean readable and surprisingly UTF-8 compatible font:
+
+  ```shell
+  # set sane console font, from https://forums.freebsd.org/threads/how-to-make-vt-console-switch-to-the-default-terminus-bsd-font.67888/
+  allscreens_flags="-f vgarom-16x32"
+  ```
+
 # BHYVE examples
 
 New: Direct Linux guest loading using `grub2-bhyve` -
