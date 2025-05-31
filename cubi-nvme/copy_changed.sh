@@ -13,7 +13,7 @@ h=$(hostname -f)
 }
 
 root=''
-for i in `find boot etc usr -type f | sort`
+for i in `find boot etc home usr -type f | sort`
 do
 	echo "comparing: '$i'"
 	src="$i"

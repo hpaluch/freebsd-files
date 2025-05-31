@@ -12,9 +12,9 @@ List of machines:
 
 # Common files
 
-Complete comon file tree is under [common-tree/](common-tree/).
+Complete common file tree is under [common-tree/](common-tree/).
 
-Some chages are also under [patches/](patches/) to better understand
+Some changes are also under [patches/](patches/) to better understand
 what exactly changed.
 
 - enable UTF-8 in Lynx browser output (by default Lynx expects ISO-8859-1
@@ -27,6 +27,75 @@ what exactly changed.
   # set sane console font, from https://forums.freebsd.org/threads/how-to-make-vt-console-switch-to-the-default-terminus-bsd-font.67888/
   allscreens_flags="-f vgarom-16x32"
   ```
+
+# BHYVE grub Alpine fix
+
+If you plan to use `grub-bhyve` to boot Linux directly from FreeBSD host
+(without UEFI) you must very carefully set/unset compatible ext4 filesystem
+features.
+
+Here is what happened to me:
+
+- tested `grub-bhyve` from package `grub2-bhyve-0.40_11`
+- Debian 12 from `debian-12.9.0-amd64-netinst.iso` worked perfectly with
+  `grub-bhyve` with default installation (single `ext4` partition with Grub,
+  MBR partitioning)
+- but Alpine Linux from `alpine-virt-3.21.3-x86_64.iso` did not work even when
+  I carefully manually partitioned disk (to really use `ext4` for boot and
+  manually installed its Grub instead of default `extlinux`
+- unfortunately it still did not work - `grub-bhyve` just reported `Unknown filesystem`
+- so I compared feature flags using following trick (shown for Alpine):
+
+  ```shell
+  pkg install e2fsprogs-core # provides tune2fs
+  mdconfig /zroot/bhyve/images/alpine1/alpine1.raw
+  tune2fs -l /dev/md0s1 | fgrep features
+  ```
+
+- comparing installed Alpine with installed Debian ext4 features I quickly
+  found differences ( ignore those with `-` missing Alpine when compared
+  to Debian, `needs_recover` was there because I run tune2fs directly in Debian
+  on mounted fs):
+
+  ```diff
+  --- ../deb12-test/deb12-features-list.txt	2025-05-31 15:16:39.295620000 +0200
+  +++ alpine-features-list.txt	2025-05-31 15:14:12.241460000 +0200
+  @@ -1,4 +1,3 @@
+  -64bit
+   dir_index
+   dir_nlink
+   ext_attr
+  @@ -10,6 +9,7 @@
+   huge_file
+   large_file
+   metadata_csum
+  -needs_recovery
+  +metadata_csum_seed
+  +orphan_file
+   resize_inode
+   sparse_super
+  ```
+
+- important incompatible features are `metadata_csum_seed` and `orphan_file`
+- using prepared `md0` device (see above text) I just did:
+
+  ```shell
+  tune2fs -O ^orphan_file,^metadata_csum_seed /dev/md0s1
+  tune2fs -l /dev/md0s1 | fgrep features
+  # unbind .raw file from md0
+  mdconfig -du md0
+  ```
+
+-  after this small tweak I was able to boot Alpine using `grub-bhyve`,
+   just needed typical commands in grub prompt:
+
+   ```
+   set root='(hd0,msdos1)'
+   configfile /boot/grub/grub.cfg
+   ```
+
+You can see my boot scripts and `device.map` for Alpine Linux
+under [cubi-nvme/home/vm/vms/alpine1](cubi-nvme/home/vm/vms/alpine1).
 
 # BHYVE examples
 
