@@ -163,6 +163,16 @@ root@fbsd-cubi# gpart show md0
 root@fbsd-cubi# ls  /dev/md0*
 
 /dev/md0        /dev/md0s1      /dev/md0s2      /dev/md0s3
+
+root@fbsd-cubi# file /dev/md0s3  # err - it is true, but useless:
+
+/dev/md0s3: character special (1/186)
+
+root@fbsd-cubi# file -s /dev/md0s3  # -s required to query content of device:
+
+/dev/md0s3: Linux rev 1.0 ext4 filesystem data, \
+   UUID=f729e272-2d86-42f7-9b51-3562593544ea (extents) \
+   (64bit) (large files) (huge files)
 ```
 
 Removing loopback device:
