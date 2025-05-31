@@ -132,6 +132,43 @@ pkg prime-list
 
 Source: FreeBSD Handbook
 
+## Mounting Loopback file as disk
+
+Simply:
+```shell
+root@fbsd-cubi# mdconfig /zroot/bhyve/images/alpine1/alpine1.raw
+
+md0
+
+root@fbsd-cubi# mdconfig -lv
+
+md0     vnode    2048M  /zroot/bhyve/images/alpine1/alpine1.raw
+
+root@fbsd-cubi# gpart show md0
+
+=>     63  4194241  md0  MBR  (2.0G)
+       63     1985       - free -  (993K)
+     2048   614400    1  linux-data  [active]  (300M)
+   616448  1048576    2  linux-swap  (512M)
+  1665024  2529280    3  linux-data  (1.2G)
+
+root@fbsd-cubi# ls  /dev/md0*
+
+/dev/md0        /dev/md0s1      /dev/md0s2      /dev/md0s3
+```
+
+Removing loopback device:
+```shell
+root@fbsd-cubi# mdconfig -lv
+
+md0     vnode    2048M  /zroot/bhyve/images/alpine1/alpine1.raw
+
+root@fbsd-cubi# mdconfig -du md0
+root@fbsd-cubi# mdconfig -lv
+
+(empty output)
+```
+
 ## Mounting Linux ext4 filesystem
 
 
