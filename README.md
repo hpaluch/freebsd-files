@@ -30,6 +30,14 @@ what exactly changed.
 
 # BHYVE examples
 
+Do not forget to install at least:
+
+```shell
+pkg install bhyve-firmware grub2-bhyve
+```
+
+And add `vmm` to kernel modules list.
+
 New: Direct Linux guest loading using `grub2-bhyve` -
 see [zotac-king/opt/images/trac-dr](zotac-king/opt/images/trac-dr) folder for example.
 
