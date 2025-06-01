@@ -372,3 +372,15 @@ root# usbconfig -u 1 -a 10 power_off
 ```
 And disconnect tablet.
 
+## BitLocker support
+
+I plan to use USB Stick formatted with FAT32 (supported well on all systems
+including FreeBSD) and encrypted using old BitLocker.
+
+However original FreeBSD port of BitLocker (`libbde` package) has bug that
+prevents to work properly (it tries to read smaller block than 512 bytes from
+block device, which is not allowed by FreeBSD kernel).
+
+I'm currently proposing fix at:
+- https://forums.freebsd.org/threads/mount-an-encrypted-usb-drive-on-freebsd-and-windows.90789/
+
