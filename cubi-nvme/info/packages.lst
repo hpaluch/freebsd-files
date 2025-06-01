@@ -4,6 +4,7 @@ bind-tools
 chromium
 doas
 drm-kmod
+e2fsprogs
 en-freebsd-doc
 evince-lite
 fastfetch
@@ -21,6 +22,7 @@ iridium-browser
 keepass
 keepassxc
 libva-intel-media-driver
+lsblk
 lynx
 mc
 moc

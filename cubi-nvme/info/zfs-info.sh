@@ -1,0 +1,1 @@
+../../tools/zfs-info.sh
