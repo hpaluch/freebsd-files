@@ -28,7 +28,7 @@ what exactly changed.
   allscreens_flags="-f vgarom-16x32"
   ```
 
-# BHYVE grub Alpine fix
+# BHYVE bridge check
 
 > [!WARNING]
 > 
@@ -38,6 +38,7 @@ what exactly changed.
 > on target machine with command: `/etc/rc.d/hostid reset`
 > and reboot!
 
+# BHYVE grub Alpine fix
 
 If you plan to use `grub-bhyve` to boot Linux directly from FreeBSD host
 (without UEFI) you must very carefully set/unset compatible ext4 filesystem
