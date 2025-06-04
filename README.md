@@ -107,6 +107,37 @@ Here is what happened to me:
 You can see my boot scripts and `device.map` for Alpine Linux
 under [cubi-nvme/home/vm/vms/alpine1](cubi-nvme/home/vm/vms/alpine1).
 
+# BHYVE grub: BTRFS compress workaround
+
+Similar issue  with BTRFS Linux guest: 
+
+- `grub-bhyve` does not like BTRFS compressed files (at least `zstd`)
+- so I did little trick - before exporting VM from QEMU/KVM I did:
+
+  ```shell
+  # inside T2 Linux VM before export:
+  mount -o compress=none,remount /  # disable compression for new files
+  mkdir /bootnc  # boot "No Compress"
+  cd /boot
+  find . | cpio -pvdmn /bootnc
+  # Now risky stuff!
+  mv /boot /boot.old
+  mv /bootnc /boot # now all files in /boot are uncompressed
+  reboot # verify that guest still boots
+  ```
+
+- next I booted FreeBSD Host with BHYVE and converted qcow2 image from Linux to raw target (as
+  bonus I instructed qemu-img to re-create sparse files with 4KB minimum blocks):
+
+  ```shell
+  qemu-img convert -p -S 4k -f qcow2 -O raw \
+    /mnt/evo-data/cubi/libvirt-pool/t2-may2025bsd.qcow2 \
+    /zroot/bhyve/images/t2-may2025/t2-may2025.raw
+  ```
+
+- and finally I was able to boot it under BHYVE using
+  script [cubi-nvme/home/vm/vms/t2-may2025/10-run-vm.sh](cubi-nvme/home/vm/vms/t2-may2025/10-run-vm.sh)
+
 # BHYVE examples
 
 Do not forget to install at least:
