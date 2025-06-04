@@ -30,6 +30,15 @@ what exactly changed.
 
 # BHYVE grub Alpine fix
 
+> [!WARNING]
+> 
+> If you have more than 1 FreeBSD machine with bridge on same network
+> always double-check that each bridge has *unique* MAC address!
+> If you cloned your machine (I did with ZFS) you *must* regenerate `/etc/hostid`
+> on target machine with command: `/etc/rc.d/hostid reset`
+> and reboot!
+
+
 If you plan to use `grub-bhyve` to boot Linux directly from FreeBSD host
 (without UEFI) you must very carefully set/unset compatible ext4 filesystem
 features.
