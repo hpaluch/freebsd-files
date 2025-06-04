@@ -15,11 +15,13 @@ echo "INFO: Using disk image '$disk'"
 
 cd "$d"
 cat <<'EOF'
-set root='(hd0,gpt3)'
 configfile /boot/grub/grub.cfg
 EOF
 set -x
-/usr/local/sbin/grub-bhyve -m device.map -r hd0 -M 1024 -v $vm
+echo "configfile /boot/grub/grub.cfg" |
+	/usr/local/sbin/grub-bhyve -m device.map \
+		-r '(hd0,msdos1)' -d /boot/grub -g grub.cfg \
+		-M 1024 -v $vm
 echo "OK: Now running VM"
 
 bhyve -ADHP -c 1 -m 1024 \
