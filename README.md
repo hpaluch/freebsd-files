@@ -117,8 +117,11 @@ pkg install bhyve-firmware grub2-bhyve
 
 And add `vmm` to kernel modules list.
 
-New: Direct Linux guest loading using `grub2-bhyve` -
-see [zotac-king/opt/images/trac-dr](zotac-king/opt/images/trac-dr) folder for example.
+New: Direct Linux guest loading using `grub2-bhyve` with working autoboot,
+see [cubi-nvme/home/vm/vms/deb12-test/10-run-vm.sh](cubi-nvme/home/vm/vms/deb12-test/10-run-vm.sh)
+folder for example. Note: I recommend to start with Debian 12 on ext4 VM,
+because Debian has sensible filesystem defaults that play well with
+`grub2-bhyve`.
 
 You can find required things in 2 places:
 

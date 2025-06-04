@@ -14,14 +14,9 @@ echo "INFO: Using disk image '$disk'"
 }
 
 cd "$d"
-cat <<'EOF'
-configfile /boot/grub/grub.cfg
-EOF
 set -x
-echo "configfile /boot/grub/grub.cfg" |
-	/usr/local/sbin/grub-bhyve -m device.map \
-		-r '(hd0,msdos1)' -d /boot/grub -g grub.cfg \
-		-M 1024 -v $vm
+/usr/local/sbin/grub-bhyve -m device.map -r 'hd0,msdos1' \
+	-M 1024 $vm
 echo "OK: Now running VM"
 
 bhyve -ADHP -c 1 -m 1024 \

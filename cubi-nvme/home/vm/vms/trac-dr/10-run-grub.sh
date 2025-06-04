@@ -3,14 +3,11 @@ set -euo pipefail
 vm=trac-dr
 
 cd $(dirname $0)
-cat <<'EOF'
-In grub do this:
-set root='(hd0,msdos1)'
-configfile /grub/grub.cfg
-EOF
 set -x
-/usr/local/sbin/grub-bhyve -m device.map -r '(hd0,msdos1)' -M 1024 -d /grub/grub.cfg trac-dr
-echo "OK: Now running VM"
+/usr/local/sbin/grub-bhyve -m device.map \
+	-r 'hd0,msdos1' -d /grub \
+	-M 1024 $vm
+echo "OK: Now running VM $vm"
 
 disk=/zroot/bhyve/images/$vm/$vm.raw
 tap=tap0
