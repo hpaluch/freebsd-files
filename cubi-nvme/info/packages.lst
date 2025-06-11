@@ -1,6 +1,8 @@
+arping
 audacious-plugins-qt5
 bhyve-firmware
 bind-tools
+btop
 chromium
 doas
 drm-kmod
@@ -12,6 +14,8 @@ firefox-esr
 fusefs-ext2
 fusefs-jmtpfs
 fusefs-simple-mtpfs
+fvwm
+fvwm-themes
 git-lite
 glx-utils
 gmtp
@@ -30,10 +34,12 @@ mpg321
 mpv
 ncdu
 netpbm
+openbox
 otter-browser
 pkg
 py311-pdftotext
 py311-psutil
+qemu-tools
 qmmp-qt5
 qutebrowser
 terminus-font

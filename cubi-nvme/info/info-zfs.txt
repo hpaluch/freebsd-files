@@ -1,6 +1,6 @@
 + zpool list
 NAME   SIZE  ALLOC   FREE  CKPOINT  EXPANDSZ   FRAG    CAP  DEDUP    HEALTH  ALTROOT
-cbsd    93G  13.9G  79.1G        -         -     0%    14%  1.00x    ONLINE  -
+cbsd    93G  28.0G  65.0G        -         -     1%    30%  1.00x    ONLINE  -
 + zpool status
   pool: cbsd
  state: ONLINE
@@ -34,31 +34,37 @@ History for 'cbsd':
 2025-05-31.14:51:23 zfs create cbsd/bhyve/images/deb12-test
 2025-05-31.16:30:44 zfs snapshot -r cbsd@snap-20250531-1630
 2025-05-31.16:36:22 zfs send -R cbsd@snap-20250531-1630
+2025-06-03.16:59:16 zfs create cbsd/bhyve/images/t2-may2025
+2025-06-04.17:46:55 zfs create cbsd/bhyve/images/trac-dr
+2025-06-04.18:09:57 zfs snapshot cbsd/bhyve/images/trac-dr@snap-import-20250604-1809
+2025-06-04.20:11:05 zfs snapshot cbsd/bhyve/images/t2-may2025@snap-import-20250604-2011
 
 + zfs list
 NAME                                       USED  AVAIL  REFER  MOUNTPOINT
-cbsd                                      13.9G  76.2G    24K  /zroot
-cbsd/ROOT                                 5.77G  76.2G    24K  none
-cbsd/ROOT/14.2-RELEASE_2025-05-25_150923     0B  76.2G   992M  /
-cbsd/ROOT/default                         5.77G  76.2G  5.54G  /
-cbsd/bhyve                                1.54G  76.2G    24K  /zroot/bhyve
-cbsd/bhyve/images                         1.54G  76.2G    24K  /zroot/bhyve/images
-cbsd/bhyve/images/alpine1                 77.4M  76.2G  77.4M  /zroot/bhyve/images/alpine1
-cbsd/bhyve/images/deb12-test              1.47G  76.2G  1.47G  /zroot/bhyve/images/deb12-test
-cbsd/home                                 5.67G  76.2G    24K  /home
-cbsd/home/aa                              4.32G  76.2G  4.32G  /home/aa
-cbsd/home/vm                              22.0M  76.2G  21.9M  /home/vm
-cbsd/home/ww                              1.33G  76.2G  1.31G  /home/ww
-cbsd/tmp                                   140K  76.2G    39K  /tmp
-cbsd/usr                                   916M  76.2G    24K  /usr
-cbsd/usr/ports                             252M  76.2G   252M  /usr/ports
-cbsd/usr/src                               664M  76.2G   664M  /usr/src
-cbsd/var                                   506K  76.2G    24K  /var
-cbsd/var/audit                              24K  76.2G    24K  /var/audit
-cbsd/var/crash                              24K  76.2G    24K  /var/crash
-cbsd/var/log                               346K  76.2G   204K  /var/log
-cbsd/var/mail                               49K  76.2G    31K  /var/mail
-cbsd/var/tmp                                39K  76.2G    24K  /var/tmp
+cbsd                                      28.0G  62.1G    24K  /zroot
+cbsd/ROOT                                 5.86G  62.1G    24K  none
+cbsd/ROOT/14.2-RELEASE_2025-05-25_150923     0B  62.1G   992M  /
+cbsd/ROOT/default                         5.86G  62.1G  5.58G  /
+cbsd/bhyve                                14.2G  62.1G    24K  /zroot/bhyve
+cbsd/bhyve/images                         14.2G  62.1G    25K  /zroot/bhyve/images
+cbsd/bhyve/images/alpine1                 78.1M  62.1G  77.7M  /zroot/bhyve/images/alpine1
+cbsd/bhyve/images/deb12-test              1.47G  62.1G  1.47G  /zroot/bhyve/images/deb12-test
+cbsd/bhyve/images/t2-may2025              10.6G  62.1G  9.39G  /zroot/bhyve/images/t2-may2025
+cbsd/bhyve/images/trac-dr                 2.00G  62.1G  2.00G  /zroot/bhyve/images/trac-dr
+cbsd/home                                 7.05G  62.1G    24K  /home
+cbsd/home/aa                              4.32G  62.1G  4.32G  /home/aa
+cbsd/home/vm                              1.39G  62.1G  1.39G  /home/vm
+cbsd/home/ww                              1.34G  62.1G  1.31G  /home/ww
+cbsd/tmp                                   140K  62.1G    38K  /tmp
+cbsd/usr                                   916M  62.1G    24K  /usr
+cbsd/usr/ports                             252M  62.1G   252M  /usr/ports
+cbsd/usr/src                               664M  62.1G   664M  /usr/src
+cbsd/var                                   618K  62.1G    24K  /var
+cbsd/var/audit                              24K  62.1G    24K  /var/audit
+cbsd/var/crash                              24K  62.1G    24K  /var/crash
+cbsd/var/log                               458K  62.1G   304K  /var/log
+cbsd/var/mail                               49K  62.1G    31K  /var/mail
+cbsd/var/tmp                                39K  62.1G    24K  /var/tmp
 + zfs list -t snap
 NAME                                                          USED  AVAIL  REFER  MOUNTPOINT
 cbsd@snap-20250529-1933                                        14K      -    24K  -
@@ -69,19 +75,21 @@ cbsd/ROOT/14.2-RELEASE_2025-05-25_150923@snap-20250529-1933     0B      -   992M
 cbsd/ROOT/14.2-RELEASE_2025-05-25_150923@snap-20250531-1630     0B      -   992M  -
 cbsd/ROOT/default@2025-05-25-15:09:23-0                       187M      -   992M  -
 cbsd/ROOT/default@snap-20250529-1933                         44.8M      -  4.87G  -
-cbsd/ROOT/default@snap-20250531-1630                          375K      -  5.54G  -
+cbsd/ROOT/default@snap-20250531-1630                         44.6M      -  5.54G  -
 cbsd/bhyve@snap-20250531-1630                                   0B      -    24K  -
-cbsd/bhyve/images@snap-20250531-1630                            0B      -    24K  -
-cbsd/bhyve/images/alpine1@snap-20250531-1630                    1K      -  77.4M  -
-cbsd/bhyve/images/deb12-test@snap-20250531-1630                 1K      -  1.47G  -
+cbsd/bhyve/images@snap-20250531-1630                           14K      -    24K  -
+cbsd/bhyve/images/alpine1@snap-20250531-1630                  404K      -  77.4M  -
+cbsd/bhyve/images/deb12-test@snap-20250531-1630              1.86M      -  1.47G  -
+cbsd/bhyve/images/t2-may2025@snap-import-20250604-2011       1.25G      -  9.34G  -
+cbsd/bhyve/images/trac-dr@snap-import-20250604-1809          5.33M      -  1.99G  -
 cbsd/home@snap-20250529-1933                                   14K      -    24K  -
 cbsd/home@snap-20250531-1630                                    0B      -    24K  -
 cbsd/home/aa@snap-20250529-1933                               251K      -  4.31G  -
-cbsd/home/aa@snap-20250531-1630                               165K      -  4.32G  -
-cbsd/home/vm@snap-20250531-1630                              34.5K      -  21.9M  -
+cbsd/home/aa@snap-20250531-1630                               242K      -  4.32G  -
+cbsd/home/vm@snap-20250531-1630                              70.5K      -  21.9M  -
 cbsd/home/ww@before-firefox                                   145K      -   390K  -
 cbsd/home/ww@snap-20250529-1933                              10.4M      -  1.30G  -
-cbsd/home/ww@snap-20250531-1630                              9.06M      -  1.30G  -
+cbsd/home/ww@snap-20250531-1630                              10.2M      -  1.30G  -
 cbsd/tmp@snap-20250529-1933                                  71.5K      -  81.5K  -
 cbsd/tmp@snap-20250531-1630                                    30K      -    40K  -
 cbsd/usr@snap-20250529-1933                                     0B      -    24K  -
@@ -97,7 +105,7 @@ cbsd/var/audit@snap-20250531-1630                               0B      -    24K
 cbsd/var/crash@snap-20250529-1933                               0B      -    24K  -
 cbsd/var/crash@snap-20250531-1630                               0B      -    24K  -
 cbsd/var/log@snap-20250529-1933                                69K      -   162K  -
-cbsd/var/log@snap-20250531-1630                              63.5K      -   193K  -
+cbsd/var/log@snap-20250531-1630                              73.5K      -   193K  -
 cbsd/var/mail@snap-20250529-1933                               18K      -    31K  -
 cbsd/var/mail@snap-20250531-1630                                0B      -    31K  -
 cbsd/var/tmp@snap-20250529-1933                                14K      -    24K  -
