@@ -5,9 +5,11 @@ bind-tools
 btop
 chromium
 doas
-drm-kmod
+drm-61-kmod
+dtrace-toolkit
 e2fsprogs
 en-freebsd-doc
+enscript-a4
 evince-lite
 fastfetch
 firefox-esr
@@ -25,6 +27,7 @@ grub2-bhyve
 iridium-browser
 keepass
 keepassxc
+librewolf
 libva-intel-media-driver
 lsblk
 lynx
