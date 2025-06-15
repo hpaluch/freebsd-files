@@ -213,12 +213,29 @@ You can find required things in 2 places:
   exit 0
   ```
 
+# General tips
+
+Convert HTML to PDF (without colors, requires `hs-pandoc` package):
+```shell
+pandoc -o ../beadm.pdf -f html -t pdf --pdf-engine pdfroff HOWTO.htm
+```
+
+
 # Linux to FreeBSD notes
 
 * run `top` to show with command arguments - use `-a` instead of `-c`: `top -a`
 * show open tcp and udp sockets: `sockstat -46s` (small `-s` will show socket status,
   like netstat on Linux)
 * ps tree - use `d` instead of `f`, for example: `ps axd`
+* `iostat X` and `sar -dp X` replacement - there are several choices:
+
+```shell
+iostat -d 1    # press 'Ctrl'-'c' to exit
+gstat          # append -a to see non-zero I/O devices only, press 'q' to quit
+systat -iostat # press ':q<ENTER>' to quit (like in VI)
+vmstat -p da 1 # press 'Ctrl'-'c' to exit
+```
+
 
 ## Ejecting USB device:
 
