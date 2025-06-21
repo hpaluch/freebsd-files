@@ -1,0 +1,312 @@
++ camcontrol devlist
+<Samsung SSD 870 EVO 1TB SVT03B6Q>  at scbus0 target 0 lun 0 (pass0,ada0)
+<Generic- SD/MMC/MS PRO 1.00>      at scbus2 target 0 lun 0 (da0,pass1)
+<ST332062 0AS 0425>                at scbus3 target 0 lun 0 (da1,pass2)
++ gpart list
+Geom name: ada0
+modified: false
+state: OK
+fwheads: 16
+fwsectors: 63
+last: 1953525134
+first: 34
+entries: 128
+scheme: GPT
+Providers:
+1. Name: ada0p1
+   Mediasize: 104857600 (100M)
+   Sectorsize: 512
+   Stripesize: 4096
+   Stripeoffset: 0
+   Mode: r0w0e0
+   efimedia: HD(1,GPT,9bc08667-dd0b-45ae-aed7-19a96255d6c6,0x800,0x32000)
+   rawuuid: 9bc08667-dd0b-45ae-aed7-19a96255d6c6
+   rawtype: c12a7328-f81f-11d2-ba4b-00a0c93ec93b
+   label: EFI System Partition
+   length: 104857600
+   offset: 1048576
+   type: efi
+   index: 1
+   end: 206847
+   start: 2048
+2. Name: ada0p2
+   Mediasize: 16777216 (16M)
+   Sectorsize: 512
+   Stripesize: 4096
+   Stripeoffset: 0
+   Mode: r0w0e0
+   efimedia: HD(2,GPT,21615325-72e9-4f8e-b1a4-2145b0aa6227,0x32800,0x8000)
+   rawuuid: 21615325-72e9-4f8e-b1a4-2145b0aa6227
+   rawtype: e3c9e316-0b5c-4db8-817d-f92df00215ae
+   label: Microsoft reserved partition
+   length: 16777216
+   offset: 105906176
+   type: ms-reserved
+   index: 2
+   end: 239615
+   start: 206848
+3. Name: ada0p3
+   Mediasize: 317425761280 (296G)
+   Sectorsize: 512
+   Stripesize: 4096
+   Stripeoffset: 0
+   Mode: r0w0e0
+   efimedia: HD(3,GPT,fe6c85e0-7bba-49b1-87fb-676ab6ac034a,0x3a800,0x24f4065e)
+   rawuuid: fe6c85e0-7bba-49b1-87fb-676ab6ac034a
+   rawtype: ebd0a0a2-b9e5-4433-87c0-68b6b72699c7
+   label: Basic data partition
+   length: 317425761280
+   offset: 122683392
+   type: ms-basic-data
+   index: 3
+   end: 620211805
+   start: 239616
+4. Name: ada0p4
+   Mediasize: 66679367680 (62G)
+   Sectorsize: 512
+   Stripesize: 4096
+   Stripeoffset: 0
+   Mode: r0w0e0
+   efimedia: HD(4,GPT,470a05c7-ef81-4bc0-9510-b5dd71917f58,0x24f7b000,0x7c33334)
+   rawuuid: 470a05c7-ef81-4bc0-9510-b5dd71917f58
+   rawtype: 0fc63daf-8483-4772-8e79-3d69d8477de4
+   label: (null)
+   length: 66679367680
+   offset: 317548658688
+   type: linux-data
+   index: 4
+   end: 750445363
+   start: 620212224
+5. Name: ada0p5
+   Mediasize: 64424509440 (60G)
+   Sectorsize: 512
+   Stripesize: 4096
+   Stripeoffset: 0
+   Mode: r0w0e0
+   efimedia: HD(5,GPT,9ff65578-7eca-4802-ac6f-a75fe8fdf29c,0x2cbae800,0x7800000)
+   rawuuid: 9ff65578-7eca-4802-ac6f-a75fe8fdf29c
+   rawtype: 0fc63daf-8483-4772-8e79-3d69d8477de4
+   label: (null)
+   length: 64424509440
+   offset: 384228655104
+   type: linux-data
+   index: 5
+   end: 876275711
+   start: 750446592
+6. Name: ada0p6
+   Mediasize: 131648716800 (123G)
+   Sectorsize: 512
+   Stripesize: 4096
+   Stripeoffset: 0
+   Mode: r0w0e0
+   efimedia: HD(6,GPT,307dd85a-97c1-0b4b-a06e-fd71771b8b0a,0x343ae800,0xf537000)
+   rawuuid: 307dd85a-97c1-0b4b-a06e-fd71771b8b0a
+   rawtype: 0fc63daf-8483-4772-8e79-3d69d8477de4
+   label: (null)
+   length: 131648716800
+   offset: 448653164544
+   type: linux-data
+   index: 6
+   end: 1133402111
+   start: 876275712
+7. Name: ada0p7
+   Mediasize: 214748364800 (200G)
+   Sectorsize: 512
+   Stripesize: 4096
+   Stripeoffset: 0
+   Mode: r0w0e0
+   efimedia: HD(7,GPT,31525aa5-3089-45b9-9ad0-4c45c75040c0,0x438e5800,0x19000000)
+   rawuuid: 31525aa5-3089-45b9-9ad0-4c45c75040c0
+   rawtype: 0fc63daf-8483-4772-8e79-3d69d8477de4
+   label: (null)
+   length: 214748364800
+   offset: 580301881344
+   type: linux-data
+   index: 7
+   end: 1552832511
+   start: 1133402112
+8. Name: ada0p8
+   Mediasize: 8589934592 (8.0G)
+   Sectorsize: 512
+   Stripesize: 4096
+   Stripeoffset: 0
+   Mode: r0w0e0
+   efimedia: HD(8,GPT,428a40e2-1702-4863-8568-8b438e0c087a,0x5c8e5800,0x1000000)
+   rawuuid: 428a40e2-1702-4863-8568-8b438e0c087a
+   rawtype: 0657fd6d-a4ab-43c4-84e5-0933c84b4f4f
+   label: (null)
+   length: 8589934592
+   offset: 795050246144
+   type: linux-swap
+   index: 8
+   end: 1569609727
+   start: 1552832512
+9. Name: ada0p9
+   Mediasize: 107374182400 (100G)
+   Sectorsize: 512
+   Stripesize: 4096
+   Stripeoffset: 0
+   Mode: r0w0e0
+   efimedia: HD(9,GPT,18b0622e-c79b-6a44-8034-9dc7d042aed3,0x5d8e5800,0xc800000)
+   rawuuid: 18b0622e-c79b-6a44-8034-9dc7d042aed3
+   rawtype: 0fc63daf-8483-4772-8e79-3d69d8477de4
+   label: (null)
+   length: 107374182400
+   offset: 803640180736
+   type: linux-data
+   index: 9
+   end: 1779324927
+   start: 1569609728
+10. Name: ada0p10
+   Mediasize: 75161927680 (70G)
+   Sectorsize: 512
+   Stripesize: 4096
+   Stripeoffset: 0
+   Mode: r0w0e0
+   efimedia: HD(10,GPT,9f1fc547-620f-11ef-8854-00012e7a5ff8,0x6a0e5800,0x8c00000)
+   rawuuid: 9f1fc547-620f-11ef-8854-00012e7a5ff8
+   rawtype: 516e7cb6-6ecf-11d6-8ff8-00022d09712b
+   label: fbsd-root
+   length: 75161927680
+   offset: 911014363136
+   type: freebsd-ufs
+   index: 10
+   end: 1926125567
+   start: 1779324928
+11. Name: ada0p11
+   Mediasize: 13958643712 (13G)
+   Sectorsize: 512
+   Stripesize: 4096
+   Stripeoffset: 0
+   Mode: r0w0e0
+   efimedia: HD(11,GPT,a76d0228-620f-11ef-8854-00012e7a5ff8,0x72ce5800,0x1a00000)
+   rawuuid: a76d0228-620f-11ef-8854-00012e7a5ff8
+   rawtype: 516e7cb5-6ecf-11d6-8ff8-00022d09712b
+   label: fbsd-swap
+   length: 13958643712
+   offset: 986176290816
+   type: freebsd-swap
+   index: 11
+   end: 1953388543
+   start: 1926125568
+Consumers:
+1. Name: ada0
+   Mediasize: 1000204886016 (932G)
+   Sectorsize: 512
+   Stripesize: 4096
+   Stripeoffset: 0
+   Mode: r0w0e0
+
+Geom name: da1
+modified: false
+state: OK
+fwheads: 255
+fwsectors: 63
+last: 625142407
+first: 40
+entries: 128
+scheme: GPT
+Providers:
+1. Name: da1p1
+   Mediasize: 272629760 (260M)
+   Sectorsize: 512
+   Stripesize: 4096
+   Stripeoffset: 0
+   Mode: r1w1e2
+   efimedia: HD(1,GPT,916da618-37d9-11f0-b210-00012e7a5ff8,0x28,0x82000)
+   rawuuid: 916da618-37d9-11f0-b210-00012e7a5ff8
+   rawtype: c12a7328-f81f-11d2-ba4b-00a0c93ec93b
+   label: efiboot0
+   length: 272629760
+   offset: 20480
+   type: efi
+   index: 1
+   end: 532519
+   start: 40
+2. Name: da1p2
+   Mediasize: 524288 (512K)
+   Sectorsize: 512
+   Stripesize: 4096
+   Stripeoffset: 0
+   Mode: r0w0e0
+   efimedia: HD(2,GPT,91a095fc-37d9-11f0-b210-00012e7a5ff8,0x82028,0x400)
+   rawuuid: 91a095fc-37d9-11f0-b210-00012e7a5ff8
+   rawtype: 83bd6b9d-7f41-11dc-be0b-001560b84f0f
+   label: gptboot0
+   length: 524288
+   offset: 272650240
+   type: freebsd-boot
+   index: 2
+   end: 533543
+   start: 532520
+3. Name: da1p3
+   Mediasize: 8589934592 (8.0G)
+   Sectorsize: 512
+   Stripesize: 4096
+   Stripeoffset: 0
+   Mode: r1w1e0
+   efimedia: HD(3,GPT,91f5bbc8-37d9-11f0-b210-00012e7a5ff8,0x82800,0x1000000)
+   rawuuid: 91f5bbc8-37d9-11f0-b210-00012e7a5ff8
+   rawtype: 516e7cb5-6ecf-11d6-8ff8-00022d09712b
+   label: swap0
+   length: 8589934592
+   offset: 273678336
+   type: freebsd-swap
+   index: 3
+   end: 17311743
+   start: 534528
+4. Name: da1p4
+   Mediasize: 311208968192 (290G)
+   Sectorsize: 512
+   Stripesize: 4096
+   Stripeoffset: 0
+   Mode: r1w1e1
+   efimedia: HD(4,GPT,923c9930-37d9-11f0-b210-00012e7a5ff8,0x1082800,0x243ac000)
+   rawuuid: 923c9930-37d9-11f0-b210-00012e7a5ff8
+   rawtype: 516e7cba-6ecf-11d6-8ff8-00022d09712b
+   label: zfs0
+   length: 311208968192
+   offset: 8863612928
+   type: freebsd-zfs
+   index: 4
+   end: 625141759
+   start: 17311744
+Consumers:
+1. Name: da1
+   Mediasize: 320072933376 (298G)
+   Sectorsize: 512
+   Stripesize: 4096
+   Stripeoffset: 0
+   Mode: r3w3e6
+
++ gpart show
+=>        34  1953525101  ada0  GPT  (932G)
+          34        2014        - free -  (1.0M)
+        2048      204800     1  efi  (100M)
+      206848       32768     2  ms-reserved  (16M)
+      239616   619972190     3  ms-basic-data  (296G)
+   620211806         418        - free -  (209K)
+   620212224   130233140     4  linux-data  (62G)
+   750445364        1228        - free -  (614K)
+   750446592   125829120     5  linux-data  (60G)
+   876275712   257126400     6  linux-data  (123G)
+  1133402112   419430400     7  linux-data  (200G)
+  1552832512    16777216     8  linux-swap  (8.0G)
+  1569609728   209715200     9  linux-data  (100G)
+  1779324928   146800640    10  freebsd-ufs  (70G)
+  1926125568    27262976    11  freebsd-swap  (13G)
+  1953388544      136591        - free -  (67M)
+
+=>       40  625142368  da1  GPT  (298G)
+         40     532480    1  efi  (260M)
+     532520       1024    2  freebsd-boot  (512K)
+     533544        984       - free -  (492K)
+     534528   16777216    3  freebsd-swap  (8.0G)
+   17311744  607830016    4  freebsd-zfs  (290G)
+  625141760        648       - free -  (324K)
+
++ cat /etc/fstab
+# Device		Mountpoint	FStype	Options		Dump	Pass#
+/dev/gpt/efiboot0		/boot/efi	msdosfs	rw		2	2
+/dev/da1p3		none	swap	sw		0	0
++ exit 0

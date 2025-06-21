@@ -1,0 +1,1 @@
+../../tools/dump-disk-info.sh

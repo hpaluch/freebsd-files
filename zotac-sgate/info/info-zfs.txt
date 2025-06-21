@@ -1,0 +1,64 @@
++ zpool list
+NAME    SIZE  ALLOC   FREE  CKPOINT  EXPANDSZ   FRAG    CAP  DEDUP    HEALTH  ALTROOT
+zroot   288G  5.53G   282G        -         -     0%     1%  1.00x    ONLINE  -
++ zpool status
+  pool: zroot
+ state: ONLINE
+config:
+
+	NAME        STATE     READ WRITE CKSUM
+	zroot       ONLINE       0     0     0
+	  da1p4     ONLINE       0     0     0
+
+errors: No known data errors
++ zpool history
+History for 'zroot':
+2025-05-23.15:26:46 zpool create -o altroot=/mnt -O compress=lz4 -O atime=off -m none -f zroot da2p4
+2025-05-23.15:26:47 zfs create -o mountpoint=none zroot/ROOT
+2025-05-23.15:26:47 zfs create -o mountpoint=/ zroot/ROOT/default
+2025-05-23.15:26:47 zfs create -o mountpoint=/home zroot/home
+2025-05-23.15:26:48 zfs create -o mountpoint=/tmp -o exec=on -o setuid=off zroot/tmp
+2025-05-23.15:26:48 zfs create -o mountpoint=/usr -o canmount=off zroot/usr
+2025-05-23.15:26:48 zfs create -o setuid=off zroot/usr/ports
+2025-05-23.15:26:49 zfs create zroot/usr/src
+2025-05-23.15:26:49 zfs create -o mountpoint=/var -o canmount=off zroot/var
+2025-05-23.15:26:49 zfs create -o exec=off -o setuid=off zroot/var/audit
+2025-05-23.15:26:50 zfs create -o exec=off -o setuid=off zroot/var/crash
+2025-05-23.15:26:50 zfs create -o exec=off -o setuid=off zroot/var/log
+2025-05-23.15:26:50 zfs create -o atime=on zroot/var/mail
+2025-05-23.15:26:51 zfs create -o setuid=off zroot/var/tmp
+2025-05-23.15:26:51 zfs set mountpoint=/zroot zroot
+2025-05-23.15:26:52 zpool set bootfs=zroot/ROOT/default zroot
+2025-05-23.15:26:52 zpool set cachefile=/mnt/boot/zfs/zpool.cache zroot
+2025-05-23.15:26:52 zfs set canmount=noauto zroot/ROOT/default
+2025-05-23.15:31:21 zfs create -u zroot/home/ansible
+2025-05-23.15:31:21 zfs set mountpoint=legacy zroot/home/ansible
+2025-05-23.15:31:22 zfs allow ansible create,destroy,mount,snapshot zroot/home/ansible
+2025-05-23.15:31:22 zfs inherit mountpoint zroot/home/ansible
+
++ zfs list
+NAME                                           USED  AVAIL  REFER  MOUNTPOINT
+zroot                                         5.53G   274G    96K  /zroot
+zroot/ROOT                                    5.43G   274G    96K  none
+zroot/ROOT/14.2-RELEASE-p3_2025-06-21_094109     8K   274G  4.85G  /
+zroot/ROOT/14.2-RELEASE_2025-05-23_153705        8K   274G   705M  /
+zroot/ROOT/14.3-RELEASE_2025-06-21_094935        8K   274G  4.92G  /
+zroot/ROOT/default                            5.43G   274G  4.94G  /
+zroot/home                                    95.6M   274G    96K  /home
+zroot/home/ansible                            95.5M   274G  95.5M  /home/ansible
+zroot/tmp                                      104K   274G   104K  /tmp
+zroot/usr                                      288K   274G    96K  /usr
+zroot/usr/ports                                 96K   274G    96K  /usr/ports
+zroot/usr/src                                   96K   274G    96K  /usr/src
+zroot/var                                      756K   274G    96K  /var
+zroot/var/audit                                 96K   274G    96K  /var/audit
+zroot/var/crash                                 96K   274G    96K  /var/crash
+zroot/var/log                                  244K   274G   244K  /var/log
+zroot/var/mail                                 128K   274G   128K  /var/mail
+zroot/var/tmp                                   96K   274G    96K  /var/tmp
++ zfs list -t snap
+NAME                                       USED  AVAIL  REFER  MOUNTPOINT
+zroot/ROOT/default@2025-05-23-15:37:05-0   109M      -   705M  -
+zroot/ROOT/default@2025-06-21-09:41:09-0  1.81M      -  4.85G  -
+zroot/ROOT/default@2025-06-21-09:49:35-0  1.20M      -  4.92G  -
++ exit 0

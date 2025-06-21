@@ -5,10 +5,12 @@ use FreeBSD 14.2.
 
 List of machines:
 
-* [Cubi MSI w NVMeSSD ](cubi-nvme/) - my latest workstation
+* [Cubi MSI w NVMe SSD ](cubi-nvme/) - my latest workstation
 * [Zotac CI327NANO Samsung SSD](zotac-ssd/)
-* [Zotac CI327NANO Kingston SSD+ZFS](zotac-king/) - my new reference
+* [Zotac CI327NANO USB Kingston SSD+ZFS](zotac-king/) - my new reference
   installation (possibly replacing my "openSUSE LEAP with Xfce" in near future.
+* [Zotac CI327NANO USB Seagate 350GB HDD](zotac-sgate/) - prototype
+  installation to test new features
 
 # Common files
 

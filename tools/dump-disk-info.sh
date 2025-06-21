@@ -1,8 +1,8 @@
 #!/bin/sh
 set -xeu
 camcontrol devlist
-gpart list nda0
-gpart show nda0
+gpart list
+gpart show
 cat /etc/fstab
 exit 0
 
