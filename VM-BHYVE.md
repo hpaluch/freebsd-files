@@ -80,7 +80,7 @@ distinguish my guest (FreeBSD 13) and Host (FreeBSD 14.3):
 
 First I visited this page using:
 ```shell
-lynx https://download.FreeBSD.org/releases/amd64/amd64/ISO-IMAGES/14.3/
+lynx https://download.FreeBSD.org/releases/amd64/amd64/ISO-IMAGES/13.5/
 ```
 
 To get Download URL for uncompressed disc1 image:
@@ -88,7 +88,7 @@ To get Download URL for uncompressed disc1 image:
 > WARNING! It seems that `vm` script does not support compressed image download (yet).
 
 ```shell
-vm iso https://download.FreeBSD.org/releases/amd64/amd64/ISO-IMAGES/14.3/FreeBSD-14.3-RELEASE-amd64-disc1.iso
+vm iso https://download.FreeBSD.org/releases/amd64/amd64/ISO-IMAGES/13.5/FreeBSD-13.5-RELEASE-amd64-disc1.iso
 ```
 
 Before creating VM we need to verify used template:
@@ -123,7 +123,7 @@ Now we will install first `FreeBSD 13` guest using (from `man vm`):
 vm create fbsd13-vm1
 # find iso name:
 ls -l /zroot/vm-bhyve/.iso/
-vm install fbsd13-vm1 FreeBSD-14.3-RELEASE-amd64-disc1.iso
+vm install fbsd13-vm1 FreeBSD-13.5-RELEASE-amd64-disc1.iso
 vm console fbsd13-vm1
 ```
 
