@@ -1,7 +1,7 @@
 # My FreeBSD files
 
-Here are my FreeBSD configuration files from various machines. As of `May 2025` I
-use FreeBSD 14.2.
+Here are my FreeBSD configuration files from various machines. As of `Jun 2025` I
+use FreeBSD 14.3.
 
 List of machines:
 
@@ -29,6 +29,11 @@ what exactly changed.
   # set sane console font, from https://forums.freebsd.org/threads/how-to-make-vt-console-switch-to-the-default-terminus-bsd-font.67888/
   allscreens_flags="-f vgarom-16x32"
   ```
+
+# BHYVE
+
+I'm now testing `vm-bhyve` scripts that can automatically manage bridges and
+VMs. Please see [VM-BHYVE.md](VM-BHYVE.md) for instructions.
 
 # BHYVE bridge check
 
@@ -111,7 +116,7 @@ under [cubi-nvme/home/vm/vms/alpine1](cubi-nvme/home/vm/vms/alpine1).
 
 # BHYVE grub: BTRFS compress workaround
 
-Similar issue  with BTRFS Linux guest: 
+Similar issue  with BTRFS Linux guest:
 
 - `grub-bhyve` does not like BTRFS compressed files (at least `zstd`)
 - so I did little trick - before exporting VM from QEMU/KVM I did:
