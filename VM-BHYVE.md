@@ -123,8 +123,7 @@ Now we will install first `FreeBSD 13` guest using (from `man vm`):
 vm create fbsd13-vm1
 # find iso name:
 ls -l /zroot/vm-bhyve/.iso/
-vm install fbsd13-vm1 FreeBSD-13.5-RELEASE-amd64-disc1.iso
-vm console fbsd13-vm1
+vm install -f fbsd13-vm1 FreeBSD-13.5-RELEASE-amd64-disc1.iso
 ```
 
 * NOTE: you may need to press ENTER to see console output
@@ -141,8 +140,7 @@ $ vm list
 NAME        DATASTORE  LOADER     CPU  MEMORY  VNC  AUTO  STATE
 fbsd13-vm1  default    bhyveload  1    256M    -    No    Stopped
 
-$ vm start fbsd13-vm1
-$ vm console fbsd13-vm1
+$ vm start -f fbsd13-vm1
 ```
 
 Important configuration files - all are relative to `PATH` in:
