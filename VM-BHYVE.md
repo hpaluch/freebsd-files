@@ -126,7 +126,15 @@ ls -l /zroot/vm-bhyve/.iso/
 vm install -f fbsd13-vm1 FreeBSD-13.5-RELEASE-amd64-disc1.iso
 ```
 
+* WARNING! Anytime VM is started or stopped the bridge briefly halts
+  network for few seconds on main interface (it is somehow related to adding
+  and removing `tap(4)` interface for VM). I read note about
+  it somewhere but forgot source. I will later resolve this problem
+  using NAT network
 * NOTE: you may need to press ENTER to see console output
+* when FreeBSD asks you for console type, you can use `xterm` if running
+  under `xterm` or `tmux` to get color output (default `vt100` is
+  black and white only and without resize)
 * NOTE: to exit console after install press `~.` (tilde followed
   by dot) - if it will not react try `ENTER` followed by `~.`
   Manual also supports Ctrl-D but it did not work in my case
