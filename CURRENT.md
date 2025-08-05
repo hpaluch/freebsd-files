@@ -187,6 +187,9 @@ git remote add origin https://git.FreeBSD.org/src.git
 git fetch origin
 git clean -fdx # remove all existing files, keep just .git
 git checkout -t origin/main
+git branch -v
+
+  * main 9a726ef24134 krb5: Move compile_et to /usr/bin as it was with Heimdal
 ```
 
 For /usr/ports:
@@ -197,6 +200,9 @@ git remote add origin https://git.FreeBSD.org/ports.git
 git fetch origin
 git clean -fdx # remove all existing files, keep just .git
 git checkout -t origin/main
+git branch -v
+
+  * main 5c916ccc133f security/pinentry: Update to 1.3.2
 ```
 
 We will rather build postmaster to have some kind of rescue tool:
@@ -248,10 +254,92 @@ NAME                           USED  AVAIL  REFER  MOUNTPOINT
 zroot/ROOT/default@origworld   256K      -  2.03G  -
 zroot/usr/ports@orig-sources   842M      -   842M  -
 zroot/usr/src@orig-sources     916M      -   916M  -
+```
 
+I was confused by bectl snapshots but found this important note
+in `man bectl`:
+
+> In that example, zroot/usr has canmount set to off, thus files in /usr
+> typically fall into the boot environment because this dataset is not
+> mounted.  zroot/usr/src is mounted, thus files in /usr/src are not in the
+> boot environment.
+
+In my case there is:
+```shell
+$ zfs list -o name,canmount,mountpoint
+
+NAME                CANMOUNT  MOUNTPOINT                     
+zroot               on        /zroot                                      
+zroot/ROOT          on        none                                        
+zroot/ROOT/default  noauto    /                                                                                                                     
+zroot/home          on        /home                                       
+zroot/home/ansible  on        /home/ansible         
+zroot/tmp           on        /tmp                                        
+zroot/usr           off       /usr                                        
+zroot/usr/ports     on        /usr/ports                     
+zroot/usr/src       on        /usr/src              
+zroot/var           off       /var                                        
+zroot/var/audit     on        /var/audit                        
+zroot/var/crash     on        /var/crash
+zroot/var/log       on        /var/log
+zroot/var/mail      on        /var/mail
+zroot/var/tmp       on        /var/tmp
+```
+
+What really confused me, is that there is shown `/usr` under `MOUNTPOINT` - that
+it it  bogus when `CANMOUNT=off`. It seems that `df` shows what is
+really mounted:
+
+```shell
+$ df -h
+
+Filesystem            Size    Used   Avail Capacity  Mounted on
+zroot/ROOT/default     29G    6.1G     23G    21%    /
+devfs                 1.0K      0B    1.0K     0%    /dev
+/dev/gpt/efiboot0     260M    1.3M    259M     1%    /boot/efi
+zroot/home             23G     96K     23G     0%    /home
+zroot/tmp              23G    380K     23G     0%    /tmp
+zroot/var/log          23G    164K     23G     0%    /var/log
+zroot/var/audit        23G     96K     23G     0%    /var/audit
+zroot/var/crash        23G     96K     23G     0%    /var/crash
+zroot/usr/ports        26G    2.4G     23G     9%    /usr/ports
+zroot/var/tmp          23G     96K     23G     0%    /var/tmp
+zroot                  23G     96K     23G     0%    /zroot
+zroot/var/mail         23G    144K     23G     0%    /var/mail
+zroot/usr/src          26G    2.7G     23G    10%    /usr/src
+zroot/home/ansible     23G    452K     23G     0%    /home/ansible
+```
+
+Here we see that `/usr` is not mounted so it should reallyh belong to BE (
+and USED column is definitely increasing for `zroot/ROOT/default`).
+
+So conclusion:
+- `bectl` boot backup should cover also `/usr`  (without `/usr/src` and/or `/usr/ports`
+  as can be seen on `df` output).
+- `zfs list -o ...,mountpoint` output is not relevant if `canmount=off`
+
+
+To build userland we have to invoke:
+
+```shell
 cd /usr/src          
 time make -j`nproc` buildworld  
 ```
+
+Here are stats (using VM with 6 cores):
+
+```
+>>> World built in 9432 seconds, ncpu: 6, make -j6
+```
+
+Which is:
+```shell
+$ echo "Minutes: " $(( 9432 / 60 ))
+
+Minutes:  157
+```
+So around 2.5 hours.
+
 
 Up here there should be no change in system.
 
