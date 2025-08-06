@@ -10,7 +10,7 @@ Starting with download on: Tue, 05 Aug 2025
   ```
 - unpack, but keep compressed file:
   ```shell
-  xz -dkv FreeBSD-15.0-CURRENT-amd64-20250801-0a3792d5c576-279199-disc1.iso.xz 
+  xz -dkv FreeBSD-15.0-CURRENT-amd64-20250801-0a3792d5c576-279199-disc1.iso.xz
   ```
 
 Using VM under KVM:
@@ -26,20 +26,22 @@ Using VM under KVM:
   - you can still select DHCP + IPv4 only
 
 
-# Fixing git to update sources
+# Building perl+git to update sources
 
-WARNING! After reboot we have to follow special procedure
-to install working `git` - see my bug for details:
-- https://bugs.freebsd.org/bugzilla/show_bug.cgi?id=288650
+> I found hard way that CURRENT from ISO is generally incompatible with
+> binary packages.
+>
+> - details: https://bugs.freebsd.org/bugzilla/show_bug.cgi?id=288650
+>
+> So we should build everything from Ports collection sources.
+> And NEVER install binary packages on CURRENT because they lag too much
+> and often reference library versions that no longer exist in World
+> (base system).
 
-> But many things seem to changed with that new release.
-
-First install some packages that do NOT conflict with curl/git and/or Kerberos:
-```shell
-pkg update
-# WARNING! Ensure that no "curl" is installed (it has broken dependencies):
-pkg install tmux vim
-```
+We have to build and install at least these packages to be able to update
+preinstalled sources to latest latest Git version:
+- `perl` - some tasks (`make index`) require PERL
+- `git-lite` - we need git to checkout/pool latest FreeBSD version from repository
 
 Recommended: backup original content of `/usr/src` and `/usr/ports`.
 If you have standard `AutoZFS` layout from installation, you can use:
@@ -67,117 +69,200 @@ for mnt in /usr/src /usr/ports;do ds=`mount | awk -v mnt="$mnt" '$3 == mnt { pri
 ```
 
 Note: With ZFS you can easily see what changed in your sources, example for ports:
+
 ```shell
 zfs diff zroot/usr/ports@orig-sources
 ```
 
-Now we can resume using my guide
+Recommended: create dedicated dataset for `/usr/obj` - so we can quickly clean it with
+just revert snapshot:
 
-- starting with: https://bugs.freebsd.org/bugzilla/show_bug.cgi?id=288650#c6
-- create file `/etc/make.conf` with contents:
+```shell
+root_ds=$( zfs list -H / | awk '{ print $1}' | sed 's@/.*@@' )
+echo "'$root_ds'"
 
-  ```make
-  # from: https://forums.freebsd.org/threads/flavors-and-make-install.79525/
-  # activate FLAVOR=tiny when building Git from ports:
-  .if ${.CURDIR:C/.*\/devel\/git//} == ""
-  FLAVOR=tiny
-  .endif
-  ```
+  'znext3'
 
-New problem: there is PERL version problem, because repository no longer contains expected version
-- even `make index`  depends on perl so it is first thing we need to fix
-- first verify that there is no perl at all so there is no library issue:
+zfs create -o mountpoint=/usr/obj -o canmount=on $root_ds/usr/obj
+zfs snapshot $root_ds/usr/obj@empty
+zfs list -rt all /usr/obj
+
+  NAME                   USED  AVAIL  REFER  MOUNTPOINT
+  znext3/usr/obj          96K  39.0G    96K  /usr/obj
+  znext3/usr/obj@empty     0B      -    96K  -
+```
+
+
+Recommended: create new Boot Environment so we can rollback
+to clean system (including `/` `/usr` and `/usr/local` with default ZFS layout):
+
+```shell
+bectl create current1
+bectl activate current1
+# and reboot to "current1" BE:
+reboot
+```
+
+After reboot we can verify that our current BE is now `current1`, while
+`default` is original installation from ISO.
+
+```shell
+$ bectl list
+
+BE       Active Mountpoint Space Created
+current1 NR     /          460M  2025-08-06 16:44
+default  -      -          492K  2025-08-06 16:32
+```
+
+Now we will try to build PERL:
+- first we must pin PERL version (it was also mentioned in /usr/ports/UPDATING in past):
+
   ```shell
-   which perl
-
-  (no output)
-  ```
-- find latest perl version:
-  ```shell
-  $ ls -d /usr/ports/lang/perl*
-
-  /usr/ports/lang/perl5-devel     /usr/ports/lang/perl5.36        /usr/ports/lang/perl5.38        /usr/ports/lang/perl5.40
-  ```
-- now trying:
-  ```shell
-  echo 'DEFAULT_VERSIONS+=  perl5=5.40' >> /etc/make.conf
-  cd /usr/ports/lang/perl5.40
-  make install
-  # when asked, I unchecked all options
-  ```
-- now test if `make index` will finish without errors:
-  ```shell
-  cd /usr/ports
-  make index
-  # these are expected:
-  #  make[4]: /usr/ports/Mk/bsd.port.mk:2036: warning: Invalid character " " in variable name "pkgconf --cflags libinotify"
-  #
-  # there may NOT be this error:
-  #   /tmp/xxxx: perl not found
+  # required - pin PERL version temporarily:
+  echo 'DEFAULT_VERSIONS+=perl5=5.40' >> /etc/make.conf
   ```
 
-- build corrected `curl` (required for https support in git) however utilize as
-  much binary packages as possible for quick build:
+- disable typical bloat:
+
+  ```shell
+  echo 'OPTIONS_UNSET_FORCE=DOCS EXAMPLES NLS INFO' >> /etc/make.conf
+  ```
+
+- now we can build it - notice which version you should build from above command:
+
+WARNING! I will evaluate dependencies one by one - it is hard job, but only
+way to avoid excessive dependency bloat...
+
+```shell
+cd /usr/ports/lang/perl5.40
+make config # uncheck all
+
+make build-depends-list
+
+  /usr/ports/ports-mgmt/pkg
+
+cd /usr/ports/ports-mgmt/pkg
+make build-depends-list # should be empty
+make install # or make reinstall if you already did that
+
+# now back to perl - should build PERL only:
+cd /usr/ports/lang/perl5.40
+make install
+```
+
+- now we can build Ports index (requires PERL):
+
+```shell
+cd /usr/ports
+time make index
+
+1368.50 real
+```
+
+- yes it took around 22 minutes...
+- with index we can use `pretty-print-build-depends-list, pretty-print-run-depends-list` make targets,
+- now we need working `curl` (will be used for `git` as `libcurl`):
 
 ```shell
 cd /usr/ports/ftp/curl
+make config
 
-$ make build-depends-list
+# keep just COOKIES, PROXY, STATIC, HTTP
+# set GSSAPI_NON
+# keep THRADED_RESOLVER and OPENSSL
 
-/usr/ports/ports-mgmt/pkg
-/usr/ports/lang/perl5.40
-/usr/ports/archivers/brotli
-/usr/ports/archivers/zstd
+make build-depends-list
 
-# due multiple breakage we have to install packages manually:
-# normally "make install-missing-packages" would do the trick...
+  /usr/ports/ports-mgmt/pkg
+  /usr/ports/lang/perl5.40
 
-pkg install brotli zstd
-cd /usr/ports/ftp/curl
+make all-depends-list
+
+  /usr/ports/ports-mgmt/pkg
+  /usr/ports/lang/perl5.40
+
+# looks good, install:
 make install
-
-# uncheck: ALTSVC, EXAMPLES, DOCS, IDN, IPV6 (if you don't need it)
-#          NTLM, PSL, STATIC, TLS_SRP, DICT, GOPHER, HTTP2,
-#          IMAP, IPFS, LIBSSH2, POP3, RTSP, SMTP, TELNET, WEBSOCKET, TFTP
-# GSSAPI: select GSSAPI_NONE
-
-# verify that curl really works:
-curl -fsS https://www.freebsd.org/robots.txt
 ```
 
+Final frontier - git
+- starting with: https://bugs.freebsd.org/bugzilla/show_bug.cgi?id=288650#c6
+- create file `/etc/make.conf` with contents:
+
+```make
+# from: https://forums.freebsd.org/threads/flavors-and-make-install.79525/
+# activate FLAVOR=tiny when building Git from ports:
+.if ${.CURDIR:C/.*\/devel\/git//} == ""
+FLAVOR=tiny
+.endif
+```
+
+Your full `/etc/make.conf` should look like:
+
+```make
+DEFAULT_VERSIONS+=perl5=5.40
+OPTIONS_UNSET_FORCE=DOCS EXAMPLES NLS INFO
+# from: https://forums.freebsd.org/threads/flavors-and-make-install.79525/
+# activate FLAVOR=tiny when building Git from ports:
+.if ${.CURDIR:C/.*\/devel\/git//} == ""
+FLAVOR=tiny
+.endif
+```
 
 Now building git that must use our port version of `libcurl`:
 ```shell
 cd /usr/ports/devel/git
 make build-depends-list
-
-/usr/ports/ports-mgmt/pkg
-/usr/ports/ftp/curl
-/usr/ports/devel/gmake
-/usr/ports/devel/autoconf
-/usr/ports/devel/automake
-/usr/ports/textproc/expat2
-
-# again we have to install manually:
-pkg install gmake autoconf automake expat
-# and build and install git:
-make install
 ```
 
+Problem: `textproc/expat2` brings unbelievable amount of dependencies.
+So comment it out in Makefile:
+
+```diff
+ diff  Makefile.orig Makefile
+124c124
+< CURL_LIB_DEPENDS=	libexpat.so:textproc/expat2
+---
+> #CURL_LIB_DEPENDS=	libexpat.so:textproc/expat2
+```
+
+
+```shell
+# now it is a bit better:
+
+make all-depends-list
+
+  /usr/ports/ports-mgmt/pkg
+  /usr/ports/ftp/curl
+  /usr/ports/lang/perl5.40
+  /usr/ports/devel/gmake
+  /usr/ports/print/indexinfo
+  /usr/ports/converters/libiconv
+  /usr/ports/devel/autoconf
+  /usr/ports/devel/m4
+  /usr/ports/devel/autoconf-switch
+  /usr/ports/devel/automake
+  
+# so let's build:
+time make instal
+# m4: keep all unchecked
+
+# took: 134.15 real
+```
 Now verify that git really works with https:
 ```shell
-git clone --depth 1 --branch main https://git.FreeBSD.org/src.git ~/test-src
+git clone https://github.com/hpaluch/freebsd-files.git ~/test-freebsd-files
 # should finish without error.
 ```
 
 # Updating sources
 
-> WARNING! After sources our system will be inconsistent:
+> WARNING! After source updates our system will be inconsistent:
 > - binaries matching original sources from ISO installation
-> - but source code in /usr/src and in /usr/ports is ahead
+> - but source code in /usr/src and in /usr/ports will be ahead
 > After updating sources we will have to update system.
 
-Finally we can proceed to update `/usr/src` and `/usr/ports` to latest CURRENT versions:
+Finally we can proceed to update `/usr/src` and `/usr/ports` to latest CURRENT versions from Git repositories:
 
 For /usr/src:
 ```shell
@@ -205,15 +290,6 @@ git branch -v
   * main 5c916ccc133f security/pinentry: Update to 1.3.2
 ```
 
-We will rather build postmaster to have some kind of rescue tool:
-
-- following: https://docs.freebsd.org/en/books/handbook/ports/#portmaster
-
-```shell
-cd /usr/ports/ports-mgmt/portmaster
-make install clean
-```
-
 # Updating system (world)
 
 We will do in-place upgrade (world install) which is always risky.
@@ -229,8 +305,8 @@ For updating main system we should generally follow:
 
 ```shell
 # already did that:
-git -C /usr/src pull 
-less /usr/src/UPDATING  
+git -C /usr/src pull
+less /usr/src/UPDATING
 
 # make snapshot of current Boot Environemt (BE)
 
@@ -256,7 +332,16 @@ zroot/usr/ports@orig-sources   842M      -   842M  -
 zroot/usr/src@orig-sources     916M      -   916M  -
 ```
 
-I was confused by bectl snapshots but found this important note
+> WARNING! `bectl create NEW_ENV_NAME` work in 3 steps:
+> 
+> 1. create "Snapshot" from current Environment
+> 2. make New Environment as "Clone" from created "Snapshot"
+> 3. Promote that clone - swaps parent/child relationship.
+> 
+> It is reason, why when you look to dataset/snapshot relationship, it
+> is reversed - thanks to step 3...
+
+Second, I was confused by bectl snapshots but found this important note
 in `man bectl`:
 
 > In that example, zroot/usr has canmount set to off, thus files in /usr
@@ -268,15 +353,15 @@ In my case there is:
 ```shell
 $ zfs list -o name,canmount,mountpoint
 
-NAME                CANMOUNT  MOUNTPOINT                     
-zroot               on        /zroot                                      
-zroot/ROOT          on        none                                        
-zroot/ROOT/default  noauto    /                                                                                                                     
-zroot/home          on        /home                                       
-zroot/home/ansible  on        /home/ansible         
-zroot/tmp           on        /tmp                                        
-zroot/usr           off       /usr                                        
-zroot/usr/ports     on        /usr/ports                     
+NAME                CANMOUNT  MOUNTPOINT
+zroot               on        /zroot
+zroot/ROOT          on        none
+zroot/ROOT/default  noauto    /
+zroot/home          on        /home
+zroot/home/ansible  on        /home/ansible
+zroot/tmp           on        /tmp
+zroot/usr           off       /usr
+zroot/usr/ports     on        /usr/ports
 zroot/usr/src       on        /usr/src              
 zroot/var           off       /var                                        
 zroot/var/audit     on        /var/audit                        
@@ -310,7 +395,7 @@ zroot/usr/src          26G    2.7G     23G    10%    /usr/src
 zroot/home/ansible     23G    452K     23G     0%    /home/ansible
 ```
 
-Here we see that `/usr` is not mounted so it should reallyh belong to BE (
+Here we see that `/usr` is not mounted so it should really belong to BE (
 and USED column is definitely increasing for `zroot/ROOT/default`).
 
 So conclusion:
@@ -322,8 +407,8 @@ So conclusion:
 To build userland we have to invoke:
 
 ```shell
-cd /usr/src          
-time make -j`nproc` buildworld  
+cd /usr/src
+time make -j`nproc` buildworld
 ```
 
 Here are stats (using VM with 6 cores):
@@ -349,14 +434,14 @@ TODO:
 
 ```shell
 # resume installing and booting kernel:
-make -j`nproc` kernel      
-shutdown -r now      
+make -j`nproc` kernel
+shutdown -r now
 
-etcupdate -p         
-cd /usr/src          
-make installworld    
-etcupdate -B         
-shutdown -r now      
+etcupdate -p
+cd /usr/src
+make installworld
+etcupdate -B
+shutdown -r now
 ```
 
 
