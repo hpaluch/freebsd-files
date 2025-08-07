@@ -45,6 +45,7 @@ preinstalled sources to latest latest Git version:
 
 Recommended: backup original content of `/usr/src` and `/usr/ports`.
 If you have standard `AutoZFS` layout from installation, you can use:
+
 ```shell
 # dry run (notice "echo"):
 for mnt in /usr/src /usr/ports;do ds=`mount | awk -v mnt="$mnt" '$3 == mnt { print $1}'`;echo zfs snapshot $ds@orig-sources;done
@@ -97,20 +98,20 @@ Recommended: create new Boot Environment so we can rollback
 to clean system (including `/` `/usr` and `/usr/local` with default ZFS layout):
 
 ```shell
-bectl create current1
-bectl activate current1
-# and reboot to "current1" BE:
+bectl create gitperl
+bectl activate gitperl
+# and reboot to "gitperl" BE:
 reboot
 ```
 
-After reboot we can verify that our current BE is now `current1`, while
+After reboot we can verify that our current BE is now `gitperl`, while
 `default` is original installation from ISO.
 
 ```shell
 $ bectl list
 
 BE       Active Mountpoint Space Created
-current1 NR     /          460M  2025-08-06 16:44
+gitperl NR     /          460M  2025-08-06 16:44
 default  -      -          492K  2025-08-06 16:32
 ```
 
@@ -251,6 +252,7 @@ time make instal
 ```
 Now verify that git really works with https:
 ```shell
+# my FreeBSD repo (it is significantly smaller than 'src' or 'ports')
 git clone https://github.com/hpaluch/freebsd-files.git ~/test-freebsd-files
 # should finish without error.
 ```
@@ -274,7 +276,7 @@ git clean -fdx # remove all existing files, keep just .git
 git checkout -t origin/main
 git branch -v
 
-  * main 9a726ef24134 krb5: Move compile_et to /usr/bin as it was with Heimdal
+  * main a39277782140 libc: Fix style nits in flushlbuf regression test
 ```
 
 For /usr/ports:
@@ -291,6 +293,15 @@ git branch -v
 ```
 
 # Updating system (world)
+
+Strongly recommended:
+- create new Boot Environment, for example with:
+
+  ```shell
+  bectl create world
+  bectl activate world
+  reboot
+  ```
 
 We will do in-place upgrade (world install) which is always risky.
 
@@ -435,13 +446,80 @@ TODO:
 ```shell
 # resume installing and booting kernel:
 make -j`nproc` kernel
-shutdown -r now
+reboot
 
 etcupdate -p
 cd /usr/src
 make installworld
 etcupdate -B
-shutdown -r now
+reboot
 ```
+
+Here is system status on Aug 7, 2025:
+
+```shell
+# freebsd-version
+
+15.0-CURRENT
+
+# uname -a
+
+FreeBSD fbsd-next3 15.0-CURRENT FreeBSD 15.0-CURRENT #0 main-n279420-a39277782140: \
+   Thu Aug  7 19:36:21 CEST 2025     root@fbsd-next3:/usr/obj/usr/src/amd64.amd64/sys/GENERIC amd64
+# uname -U
+
+1500056
+
+# uname -K
+
+1500056
+
+# cd /usr/src/
+# git branch -vv
+
+* main a39277782140 [origin/main] libc: Fix style nits in flushlbuf regression test
+
+```
+
+# Updating to latest ports
+
+Following: https://docs.freebsd.org/en/books/handbook/ports/#portmaster
+
+```shell
+cd /usr/ports/ports-mgmt/portmaster
+make install clean
+portmaster -L
+# do update
+time portmaster -a
+```
+
+Here is output:
+
+```
+===>>> The following actions were performed:
+	Upgrade of pkg-2.2.0 to pkg-2.2.2
+	Upgrade of bsddialog-1.0.4 to bsddialog-1.0.5
+	Upgrade of expat-2.7.0 to expat-2.7.1
+	Upgrade of pkgconf-2.3.0,1 to pkgconf-2.4.3,1
+	Upgrade of portconfig-0.6.2 to portconfig-0.6.2_1
+	Upgrade of perl5-5.40.2 to perl5-5.40.2_2
+	Upgrade of curl-8.14.1 to curl-8.15.0
+	Upgrade of libffi-3.4.6 to libffi-3.5.1
+	Upgrade of python311-3.11.12_1 to python311-3.11.13
+	Upgrade of py311-flit-core-3.11.0 to py311-flit-core-3.12.0
+	Upgrade of py311-packaging-24.2 to py311-packaging-25.0
+	Upgrade of git-tiny-2.49.0 to git-tiny-2.50.1
+	Installation of devel/py-wheel044@py311 (py311-wheel044-0.44.0_1)
+	Upgrade of py311-setuptools-63.1.0_2 to py311-setuptools-63.1.0_3
+	Upgrade of texinfo-7.1_8,1 to texinfo-7.1_11,1
+
+      748.15 real      1890.19 user       268.38 sys
+```
+
+TODO: Rebuild all ports:
+- when there is new system library changes we (may) need to rebuild all installed ports
+- described at the end of `portmaster(8)` manual:
+- https://man.freebsd.org/cgi/man.cgi?query=portmaster&apropos=0&sektion=8&manpath=freebsd-ports&format=html
+- original discussion: https://forums.freebsd.org/threads/rebuilding-all-ports-with-portmaster.51210/
 
 
