@@ -46,7 +46,7 @@ pre-installed sources to latest latest Git version:
 
 - `perl` - some tasks (`make index`) require PERL
 - `git-lite` - we need git to checkout/pool latest FreeBSD version from repository, under
-  hood it requires `curl` (for https) and `expat` (for https push - posts XML?) and 
+  hood it requires `curl` (for https) and `expat` (for https push - posts XML?) and
   several other ports to build and run.
 
 Recommended: backup original content of `/usr/src` and `/usr/ports`.
@@ -163,7 +163,7 @@ portmaster -i sysutils/tmux
 	Install devel/pkgconf
 ```
 
-Now 
+Now
 
 - create `~/.tmux.conf` with vivid color (to know where I'm logged in) - example for deep blue:
 
@@ -189,10 +189,10 @@ portmaster -i devel/git
 # liblz4: press ENTER to accept defaults
 
 # Here is final postmaster's list of packages to be build for devel/git:
-===>>> The following actions will be taken if you choose to proceed:                                                                                
-        Install devel/git                                                                                                                           
-        Install devel/autoconf                                            
-        Install devel/autoconf-switch         
+===>>> The following actions will be taken if you choose to proceed:
+        Install devel/git
+        Install devel/autoconf
+        Install devel/autoconf-switch
         Install devel/m4
         Install devel/automake
         Install print/indexinfo
@@ -228,7 +228,7 @@ portmaster -i devel/git
         Install archivers/zstd
         Install archivers/liblz4
 
-===>>> Proceed? y/n [y] 
+===>>> Proceed? y/n [y]
 
 (sorry, forget to run "time" - guess is 30 minutes on 8 cores)
 ```
@@ -289,7 +289,7 @@ avoid overloading FreeBSD.org Git servers.
 
 - on my Target machine I did this - warning destructive delete
 - NEVER use `rm -rf .*` - it WILL match `..` parent directories (unless special glob options are set) and remove everything !
-- see https://unix.stackexchange.com/a/77128 
+- see https://unix.stackexchange.com/a/77128
 
   ```shell
   cd
@@ -351,17 +351,52 @@ time make -j`nproc` buildworld
 time make -j`nproc` buildkernel
 ```
 
+New alternative you can use `TASK-jobs` target (see `/usr/src/UPDATING` at
+`20230420:` and `/usr/src/share/mk/jobs.mk` for details):
+
+```shell
+cd /usr/src
+make buildworld-jobs
+# can watch output with: tail -f ../buildworld.log
+
+make buildkernel-jobs
+# can watch output with: tail -f ../buildkernel.log
+```
+
 Build statistics:
 ```
-TODO
+--- buildworld_epilogue ---
+--------------------------------------------------------------
+>>> World build completed on Tue Aug 12 20:50:53 CEST 2025
+>>> World built in 8695 seconds, ncpu: 8, make -j8
+--------------------------------------------------------------
 ```
+
+When using new -jobs:
+
+```shell
+$ cd /usr/src
+$ make buildkernel-jobs
+
+make: /usr/src/share/mk/jobs.mk:47:
+@ 1755024682 [2025-08-12 20:51:22] Start buildkernel-jobs
+@ 1755024682 [2025-08-12 20:51:22] Start buildkernel -j1.33  log=/usr/buildkernel.log
+@ 1755025506 [2025-08-12 21:05:06] Finished buildkernel-jobs seconds=824
+```
+
+On 8 cores :
+- World build takes around 2h:24m
+- Kernel build takes around
 
 Now you should definitely backup system, at least with `bectl`:
 ```shell
 bectl create buildworld
 bectl list
 
-TODO
+  BE         Active Mountpoint Space Created
+  buildworld -      -          8K    2025-08-12 21:06
+  default    NR     /          762M  2025-08-12 16:59
+  pristine   -      -          320K  2025-08-12 17:05
 ```
 
 Note your current kernel and userland versions (soon will be different):
@@ -386,7 +421,7 @@ For updating main system we should generally follow:
 Now we will install prepared kernel and reboot:
 ```shell
 cd /usr/src
-make -j`nproc` installkernel
+make installkernel
 ```
 
 WARNING! After reboot we will run Kernel that is More recent than World (system).
@@ -397,6 +432,17 @@ Now boot new kernel and prepare `/etc/` for changes (-p) means "pre-world":
 ```shell
 reboot
 etcupdate -p
+```
+
+Notice inconsistent system (expected) - Kernel version different from Userland:
+```shell
+$ uname -U
+
+1500056
+
+$ uname -K
+
+1500059
 ```
 
 Now we will install system (World) - most risky but important! Only after
@@ -410,33 +456,84 @@ etcupdate -B # I don't understand what -B exactly does...
 reboot
 ```
 
-Here is system status on Aug 7, 2025:
+Here is system status on Aug 12, 2025:
 
 ```shell
-# freebsd-version
+$ freebsd-version
 
-15.0-CURRENT
+15.0-PRERELEASE
 
-# uname -a
+$ uname -v
 
-FreeBSD fbsd-next3 15.0-CURRENT FreeBSD 15.0-CURRENT #0 main-n279420-a39277782140: \
-   Thu Aug  7 19:36:21 CEST 2025     root@fbsd-next3:/usr/obj/usr/src/amd64.amd64/sys/GENERIC amd64
-# uname -U
+FreeBSD 15.0-PRERELEASE #0 main-n279550-4a94dee2a497: Tue Aug 12 21:04:52 CEST 2025 \
+     root@fbsd-next4:/usr/obj/usr/src/amd64.amd64/sys/GENERIC
 
-1500056
+$ Userland and Kernel should have same version:
 
-# uname -K
+$ uname -UK
 
-1500056
+1500059 1500059
 
-# cd /usr/src/
-# git branch -vv
+$ git -C /usr/src branch -vv
 
-* main a39277782140 [origin/main] libc: Fix style nits in flushlbuf regression test
-
+* main 4a94dee2a497 [origin/main] ObsoleteFiles: both gssapi/gssapi.h and gssapi.h existed
 ```
 
+Now risky operation - delete-old:
+- first make system backup:
+  ```shell
+  bectl create installworld
+  ```
+- now dangerous cleanup:
+
+  ```shell
+  $ make -C /usr/src delete-old
+  
+  >>> Removing old files (only deletes safe to delete libs)
+  remove /usr/include/openssl/asn1_mac.h? y
+  remove /usr/sbin/nvmfd? y
+  remove /usr/sbin/rpc.ypupdated? y
+  remove /usr/share/man/man8/nvmfd.8.gz? y
+  >>> Old files removed
+  >>> Removing old directories
+  >>> Old directories removed
+  To remove old libraries run 'make delete-old-libs'.
+  
+  $ make -C /usr/src delete-old-libs
+  
+  >>> Removing old libraries
+  Please be sure no application still uses those libraries, else you
+  can not start such an application. Consult UPDATING for more
+  information regarding how to cope with the removal/revision bump
+  of a specific library.
+  remove /lib/libcrypto.so.30? y
+  remove /usr/lib/libgssapi.a? y
+  remove /usr/lib/libgssapi.so.10? y
+  remove /usr/lib/libssl.so.30? y
+  >>> Old libraries removed
+  
+  $ reboot
+  ```
+
 # Updating to latest ports
+
+TODO: follow `man portmaster`:
+
+```
+1. portmaster --list-origins > ~/installed-port-list
+2. Update the ports tree # oops already did that....
+3. portmaster -ty --clean-distfiles
+4. portmaster -Faf
+5. pkg delete -afy
+6. rm -rf /usr/local/lib/compat/pkg
+7. Back up any files in /usr/local you wish to save,
+   such as configuration files in /usr/local/etc
+8. Manually check /usr/local and /var/db/pkg
+to make sure that they are really empty
+9. Install ports-mgmt/pkg and then ports-mgmt/portmaster.
+   Remove both from ~/installed-port-list.
+10. portmaster --no-confirm `cat ~/installed-port-list`
+```
 
 Following: https://docs.freebsd.org/en/books/handbook/ports/#portmaster
 
@@ -451,6 +548,8 @@ time portmaster -a
 Here is output:
 
 ```
+TODO Update
+
 ===>>> The following actions were performed:
 	Upgrade of pkg-2.2.0 to pkg-2.2.2
 	Upgrade of bsddialog-1.0.4 to bsddialog-1.0.5
@@ -472,6 +571,7 @@ Here is output:
 ```
 
 TODO: Rebuild all ports:
+
 - when there is new system library changes we (may) need to rebuild all installed ports
 - described at the end of `portmaster(8)` manual:
 - https://man.freebsd.org/cgi/man.cgi?query=portmaster&apropos=0&sektion=8&manpath=freebsd-ports&format=html
