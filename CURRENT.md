@@ -2,15 +2,18 @@
 
 Here is my guide how to use FreeBSD current from "scratch" (from CURRENT ISO)
 
-Starting with download on: Tue, 05 Aug 2025
+Starting with download on: Tue, 12 Aug 2025
 - page: https://download.freebsd.org/snapshots/amd64/amd64/ISO-IMAGES/15.0/
+- or select mirror from https://docs.freebsd.org/en/books/handbook/mirrors/#mirrors
 - command:
   ```shell
-  curl -fLO https://download.freebsd.org/snapshots/amd64/amd64/ISO-IMAGES/15.0/FreeBSD-15.0-CURRENT-amd64-20250801-0a3792d5c576-279199-disc1.iso.xz
+  curl -fLO https://download.freebsd.org/snapshots/amd64/amd64/ISO-IMAGES/15.0/FreeBSD-15.0-CURRENT-amd64-20250807-02f394281fd6-279407-disc1.iso.xz
+  # or user rather mirror, in my case:
+  curl -fLO http://ftp.cz.freebsd.org/pub/FreeBSD/snapshots/ISO-IMAGES/15.0/FreeBSD-15.0-CURRENT-amd64-20250807-02f394281fd6-279407-disc1.iso.xz
   ```
 - unpack, but keep compressed file:
   ```shell
-  xz -dkv FreeBSD-15.0-CURRENT-amd64-20250801-0a3792d5c576-279199-disc1.iso.xz
+  xz -dkv FreeBSD-15.0-CURRENT-amd64-20250807-02f394281fd6-279407-disc1.iso.xz
   ```
 
 Using VM under KVM:
@@ -29,228 +32,209 @@ Using VM under KVM:
 # Building perl+git to update sources
 
 > I found hard way that CURRENT from ISO is generally incompatible with
-> binary packages.
->
+> binary packages because they sometimes lag several weeks (!).
+> There is lengthy discussion of such occasion starting on:
+> - https://marc.info/?l=freebsd-current&m=175489043024606&w=2
+> - click on `next-in-thread` link to see follow-ups
+> Or my bug report:
 > - details: https://bugs.freebsd.org/bugzilla/show_bug.cgi?id=288650
 >
-> So we should build everything from Ports collection sources.
-> And NEVER install binary packages on CURRENT because they lag too much
-> and often reference library versions that no longer exist in World
-> (base system).
+> So we should build everything from Ports collection sources when running CURRENT.
 
 We have to build and install at least these packages to be able to update
-preinstalled sources to latest latest Git version:
+pre-installed sources to latest latest Git version:
+
 - `perl` - some tasks (`make index`) require PERL
-- `git-lite` - we need git to checkout/pool latest FreeBSD version from repository
+- `git-lite` - we need git to checkout/pool latest FreeBSD version from repository, under
+  hood it requires `curl` (for https) and `expat` (for https push - posts XML?) and 
+  several other ports to build and run.
 
 Recommended: backup original content of `/usr/src` and `/usr/ports`.
 If you have standard `AutoZFS` layout from installation, you can use:
 
 ```shell
-# dry run (notice "echo"):
-for mnt in /usr/src /usr/ports;do ds=`mount | awk -v mnt="$mnt" '$3 == mnt { print $1}'`;echo zfs snapshot $ds@orig-sources;done
-
-  zfs snapshot zroot/usr/src@orig-sources
-  zfs snapshot zroot/usr/ports@orig-sources
-
-# real run:
-
+# run
 for mnt in /usr/src /usr/ports;do ds=`mount | awk -v mnt="$mnt" '$3 == mnt { print $1}'`;zfs snapshot $ds@orig-sources;done
 
 # verification:
 
 for mnt in /usr/src /usr/ports;do ds=`mount | awk -v mnt="$mnt" '$3 == mnt { print $1}'`;zfs list -t all -r $ds;done
 
-  NAME                         USED  AVAIL  REFER  MOUNTPOINT
-  zroot/usr/src                916M  33.9G   916M  /usr/src
-  zroot/usr/src@orig-sources     0B      -   916M  -
-  NAME                           USED  AVAIL  REFER  MOUNTPOINT
-  zroot/usr/ports                842M  33.9G   842M  /usr/ports
-  zroot/usr/ports@orig-sources     0B      -   842M  -
+  NAME                          USED  AVAIL  REFER  MOUNTPOINT
+  znext4/usr/src                922M  34.1G   922M  /usr/src
+  znext4/usr/src@orig-sources     0B      -   922M  -
+  NAME                            USED  AVAIL  REFER  MOUNTPOINT
+  znext4/usr/ports                862M  34.1G   862M  /usr/ports
+  znext4/usr/ports@orig-sources     0B      -   862M  -
 ```
 
 Note: With ZFS you can easily see what changed in your sources, example for ports:
 
 ```shell
-zfs diff zroot/usr/ports@orig-sources
+zfs diff znext4/usr/ports@orig-sources
 ```
 
 Recommended: create dedicated dataset for `/usr/obj` - so we can quickly clean it with
-just revert snapshot:
+just rollback of snapshot:
 
 ```shell
 root_ds=$( zfs list -H / | awk '{ print $1}' | sed 's@/.*@@' )
 echo "'$root_ds'"
 
-  'znext3'
+  'znext4'
 
 zfs create -o mountpoint=/usr/obj -o canmount=on $root_ds/usr/obj
 zfs snapshot $root_ds/usr/obj@empty
 zfs list -rt all /usr/obj
 
   NAME                   USED  AVAIL  REFER  MOUNTPOINT
-  znext3/usr/obj          96K  39.0G    96K  /usr/obj
-  znext3/usr/obj@empty     0B      -    96K  -
+  znext4/usr/obj          96K  34.1G    96K  /usr/obj
+  znext4/usr/obj@empty     0B      -    96K  -
 ```
-
 
 Recommended: create new Boot Environment so we can rollback
 to clean system (including `/` `/usr` and `/usr/local` with default ZFS layout):
 
 ```shell
-bectl create gitperl
-bectl activate gitperl
-# and reboot to "gitperl" BE:
-reboot
+bectl create pristine
+bectl list
+
+  BE       Active Mountpoint Space Created
+  default  NR     /          460M  2025-08-12 16:59
+  pristine -      -          8K    2025-08-12 17:05
 ```
 
-After reboot we can verify that our current BE is now `gitperl`, while
-`default` is original installation from ISO.
-
-```shell
-$ bectl list
-
-BE       Active Mountpoint Space Created
-gitperl NR     /          460M  2025-08-06 16:44
-default  -      -          492K  2025-08-06 16:32
-```
-
-Now we will try to build PERL:
-- first we must pin PERL version (it was also mentioned in /usr/ports/UPDATING in past):
-
-  ```shell
-  # required - pin PERL version temporarily:
-  echo 'DEFAULT_VERSIONS+=perl5=5.40' >> /etc/make.conf
-  ```
-
-- disable typical bloat:
-
-  ```shell
-  echo 'OPTIONS_UNSET_FORCE=DOCS EXAMPLES NLS INFO' >> /etc/make.conf
-  ```
-
-- now we can build it - notice which version you should build from above command:
-
-WARNING! I will evaluate dependencies one by one - it is hard job, but only
-way to avoid excessive dependency bloat...
-
-```shell
-cd /usr/ports/lang/perl5.40
-make config # uncheck all
-
-make build-depends-list
-
-  /usr/ports/ports-mgmt/pkg
-
-cd /usr/ports/ports-mgmt/pkg
-make build-depends-list # should be empty
-make install # or make reinstall if you already did that
-
-# now back to perl - should build PERL only:
-cd /usr/ports/lang/perl5.40
-make install
-```
-
-- now we can build Ports index (requires PERL):
-
-```shell
-cd /usr/ports
-time make index
-
-1368.50 real
-```
-
-- yes it took around 22 minutes...
-- with index we can use `pretty-print-build-depends-list, pretty-print-run-depends-list` make targets,
-- now we need working `curl` (will be used for `git` as `libcurl`):
-
-```shell
-cd /usr/ports/ftp/curl
-make config
-
-# keep just COOKIES, PROXY, STATIC, HTTP
-# set GSSAPI_NON
-# keep THRADED_RESOLVER and OPENSSL
-
-make build-depends-list
-
-  /usr/ports/ports-mgmt/pkg
-  /usr/ports/lang/perl5.40
-
-make all-depends-list
-
-  /usr/ports/ports-mgmt/pkg
-  /usr/ports/lang/perl5.40
-
-# looks good, install:
-make install
-```
-
-Final frontier - git
-- starting with: https://bugs.freebsd.org/bugzilla/show_bug.cgi?id=288650#c6
-- create file `/etc/make.conf` with contents:
+Before building any port we will prepare default configuration for several Ports.
+Create file `/etc/make.conf` with contents:
 
 ```make
+OPTIONS_UNSET_FORCE=DOCS EXAMPLES NLS INFO BASH ZSH
+
 # from: https://forums.freebsd.org/threads/flavors-and-make-install.79525/
 # activate FLAVOR=tiny when building Git from ports:
 .if ${.CURDIR:C/.*\/devel\/git//} == ""
 FLAVOR=tiny
 .endif
-```
 
-Your full `/etc/make.conf` should look like:
+# git requires ftp/curl - remove most bloat:
+ftp_curl_UNSET = ALTSVC IDN IPV6 NTLM PSL STATIC TLS_SRP DICT GOPHER HTTP2 IMAP IPFS \
+  LIBSSH2 MQTT POP3 RTSP SMB SMTP TELNET TFTP WEBSOCKET GSSAPI_NONE
 
-```make
 DEFAULT_VERSIONS+=perl5=5.40
-OPTIONS_UNSET_FORCE=DOCS EXAMPLES NLS INFO
-# from: https://forums.freebsd.org/threads/flavors-and-make-install.79525/
-# activate FLAVOR=tiny when building Git from ports:
-.if ${.CURDIR:C/.*\/devel\/git//} == ""
-FLAVOR=tiny
-.endif
+# deselect all default options in perl5.40
+lang_perl5.40_UNSET = DTRACE MULTIPLICITY PERL_64BITINT THREADS
 ```
 
-Now building git that must use our port version of `libcurl`:
+First we will build PERL that is required to invoke `make index`:
 ```shell
-cd /usr/ports/devel/git
-make build-depends-list
+cd /usr/ports/lang/perl5.40
+make install # will first build portconfig and pkg
+# on configuration dialog simply press ENTER to accept defaults (all unchecked)
 ```
 
-Problem: `textproc/expat2` brings unbelievable amount of dependencies.
-So comment it out in Makefile:
-
-```diff
- diff  Makefile.orig Makefile
-124c124
-< CURL_LIB_DEPENDS=	libexpat.so:textproc/expat2
----
-> #CURL_LIB_DEPENDS=	libexpat.so:textproc/expat2
-```
-
+Now build Ports index (requires `perl` to finish without error) - may take around 30 minutes:
 
 ```shell
-# now it is a bit better:
+time make -C /usr/ports index
 
-make all-depends-list
-
-  /usr/ports/ports-mgmt/pkg
-  /usr/ports/ftp/curl
-  /usr/ports/lang/perl5.40
-  /usr/ports/devel/gmake
-  /usr/ports/print/indexinfo
-  /usr/ports/converters/libiconv
-  /usr/ports/devel/autoconf
-  /usr/ports/devel/m4
-  /usr/ports/devel/autoconf-switch
-  /usr/ports/devel/automake
-  
-# so let's build:
-time make instal
-# m4: keep all unchecked
-
-# took: 134.15 real
+# 23 minutes on 8 cores
 ```
-Now verify that git really works with https:
+
+Index seems to improve dependency handling (?) - without it I got extremely big bloat when
+building curl - which has `expat2` dependency.
+
+Now we will build `portmaster` - preferred tool to manage ports:
+
+```shell
+make -C /usr/ports/ports-mgmt/portmaster install
+```
+
+Recommended - build `tmux` to reduce risk that broken connection will abort
+future builds:
+
+```shell
+portmaster -i sysutils/tmux
+# tmux: press ENTER to accept config
+# libevent: uncheck all checkboxes with SPACE and press ENTER
+
+===>>> The following actions will be taken if you choose to proceed:
+	Install sysutils/tmux
+	Install devel/libevent
+	Install devel/pkgconf
+```
+
+Now 
+
+- create `~/.tmux.conf` with vivid color (to know where I'm logged in) - example for deep blue:
+
+  ```
+  set-option -g status-style bg='#000080'
+  ```
+
+- run `tmux` (to avoid broken connection)
+- and finally build `git-lite` with:
+
+```shell
+portmaster -i devel/git
+
+# I did following when asked for port options:
+# m4 config: press ENTER to accept defaults (all unchecked)
+# curl config: press ENTER to accept defaults (few checked)
+# brotli: press ENTER to accept default (unchecked)
+# python: uncheck all (IPV6 LIBMPDEDC LTO PYMALLOC) and ENTER
+# readline: uncheck BRACKETEDPASTE and press ENTER
+# libiconv: press ENTER to accept defaults (checked ENCODINGS)
+# expat: press ENTER to accept defaults (all unchecked)
+# zstd: press ENTER to accept defaults (unchecked)
+# liblz4: press ENTER to accept defaults
+
+# Here is final postmaster's list of packages to be build for devel/git:
+===>>> The following actions will be taken if you choose to proceed:                                                                                
+        Install devel/git                                                                                                                           
+        Install devel/autoconf                                            
+        Install devel/autoconf-switch         
+        Install devel/m4
+        Install devel/automake
+        Install print/indexinfo
+        Install devel/gmake
+        Install ftp/curl
+        Install archivers/brotli
+        Install devel/cmake-core
+        Install devel/jsoncpp
+        Install devel/meson
+        Install devel/ninja
+        Install lang/python311
+        Install devel/libffi
+        Install devel/readline
+        Install devel/py-build@py311
+        Install devel/py-flit-core@py311
+        Install devel/py-installer@py311
+        Install devel/py-packaging@py311
+        Install devel/py-pyproject-hooks@py311
+        Install devel/py-setuptools@py311
+        Install devel/py-wheel044@py311
+        Install devel/py-wheel@py311
+        Install devel/libuv
+        Install dns/libidn2
+        Install devel/libunistring
+        Install misc/help2man
+        Install print/texinfo
+        Install converters/libiconv
+        Install converters/p5-Text-Unidecode
+        Install devel/p5-Locale-libintl
+        Install textproc/p5-Unicode-EastAsianWidth
+        Install security/rhash
+        Install textproc/expat2
+        Install archivers/zstd
+        Install archivers/liblz4
+
+===>>> Proceed? y/n [y] 
+
+(sorry, forget to run "time" - guess is 30 minutes on 8 cores)
+```
+
+Now verify that git really works with https (`clone/pull/fetch` over https is enough for us):
+
 ```shell
 # my FreeBSD repo (it is significantly smaller than 'src' or 'ports')
 git clone https://github.com/hpaluch/freebsd-files.git ~/test-freebsd-files
@@ -259,14 +243,14 @@ git clone https://github.com/hpaluch/freebsd-files.git ~/test-freebsd-files
 
 # Updating sources
 
-> WARNING! After source updates our system will be inconsistent:
-> - binaries matching original sources from ISO installation
-> - but source code in /usr/src and in /usr/ports will be ahead
-> After updating sources we will have to update system.
+> WARNING! After source updates your system will be inconsistent:
+> - binaries match original sources from ISO installation
+> - but source code in `/usr/src` and in `/usr/ports` will be ahead
+> After updating sources we will have to build and update system.
 
-Finally we can proceed to update `/usr/src` and `/usr/ports` to latest CURRENT versions from Git repositories:
+So, finally we can proceed to update `/usr/src` and `/usr/ports` to latest CURRENT versions from Git repositories:
 
-For /usr/src:
+For `/usr/src`:
 ```shell
 cd /usr/src
 git init
@@ -279,7 +263,7 @@ git branch -v
   * main a39277782140 libc: Fix style nits in flushlbuf regression test
 ```
 
-For /usr/ports:
+For `/usr/ports`:
 ```shell
 cd /usr/ports
 git init
@@ -292,166 +276,137 @@ git branch -v
   * main 5c916ccc133f security/pinentry: Update to 1.3.2
 ```
 
-# Updating system (world)
+NOTE: In my case I actually copied tarballs from another machine (with latest Git sources) to
+avoid overloading FreeBSD.org Git servers.
 
-Strongly recommended:
-- create new Boot Environment, for example with:
+- I prepared source tarballs on source machine with:
 
   ```shell
-  bectl create world
-  bectl activate world
-  reboot
+  cd /
+  tar -cvzf /home/ansible/tarballs/usr-src-latest.tar.gz usr/src
+  tar -cvzf /home/ansible/tarballs/usr-ports-latest.tar.gz usr/ports
   ```
 
-We will do in-place upgrade (world install) which is always risky.
+- on my Target machine I did this - warning destructive delete
+- NEVER use `rm -rf .*` - it WILL match `..` parent directories (unless special glob options are set) and remove everything !
+- see https://unix.stackexchange.com/a/77128 
 
-This kind of build is described on `build(7)` manual page.
+  ```shell
+  cd
+  find /usr/src -mindepth 1 -delete
+  tar xpvf /home/ansible/tarballs/usr-src-latest.tar.gz -C /
+  find /usr/ports -mindepth 1 -delete
+  tar xpvf /home/ansible/tarballs/usr-ports-latest.tar.gz  -C /
+  ```
 
-> Possible alternative:
-> - rather create fresh ISO image and install it somewhere (like T2SDE Linux)
-> - not yet tested, but planed... - some info in `release(7)`
+- here are details on Git repository versions ( Aug 12, 2025 ):
+
+  ```shell
+  git -C /usr/src branch -v
+
+    * main 4a94dee2a497 ObsoleteFiles: both gssapi/gssapi.h and gssapi.h existed
+
+  git -C /usr/ports branch -v
+
+    * main 3bb58a295d37 dns/dnsmasq-devel: update to v2.92test19
+  ```
+
+- or other way, but often confusing:
+
+  ```shell
+  git -C /usr/src describe  --long --always
+
+    vendor/NetBSD/bmake/20250804-302018-g4a94dee2a497
+
+  git -C /usr/ports describe  --long --always
+
+    13.4-eol-3819-g3bb58a295d37
+  ```
+
+# Updating system (world)
+
+We will first do thing that should do NOT modify system (so generally no backup
+needed yet - but it will not hurt of course).
+
+We will invoke following `make` targets:
+- `buildworld` - userland (system)
+- `buildkernel` - OS Kernel
+
+Please note that `buildworld` takes lot of time (hours) because it will build
+toolchain - `clang+llvm`. Here is toolchain version *before* build:
+
+```shell
+cc --version | sed 1q
+
+  FreeBSD clang version 19.1.7 (https://github.com/llvm/llvm-project.git llvmorg-19.1.7-0-gcd708029e0b2)
+```
+
+To build World and Kernel do this:
+```shell
+tmux # use tmux or local console - build will take lot of time!
+
+script ~/build-world-$(date '+%s').log
+cd /usr/src
+time make -j`nproc` buildworld
+time make -j`nproc` buildkernel
+```
+
+Build statistics:
+```
+TODO
+```
+
+Now you should definitely backup system, at least with `bectl`:
+```shell
+bectl create buildworld
+bectl list
+
+TODO
+```
+
+Note your current kernel and userland versions (soon will be different):
+```shell
+$ uname -v
+
+FreeBSD 15.0-CURRENT #0 main-n279407-02f394281fd6: Thu Aug  7 11:11:50 UTC 2025 \
+     root@releng3.nyi.freebsd.org:/usr/obj/usr/src/amd64.amd64/sys/GENERIC
+
+$ uname -UK # print both Userland and Kernel version:
+
+1500056 1500056
+```
+
+So far they are same (so there is no confusion which number is Kernel and which number is Userland).
 
 For updating main system we should generally follow:
 - https://docs.freebsd.org/en/books/handbook/cutting-edge/#updating-src-quick-start
+- also read latest `/usr/src/UPDATING` including end section `COMMON ITEMS:`
+- NOTE: sometimes there should be build custom toolchain for kernel - see UPDATING for details.
 
-```shell
-# already did that:
-git -C /usr/src pull
-less /usr/src/UPDATING
-
-# make snapshot of current Boot Environemt (BE)
-
-$ bectl list
-
-BE      Active Mountpoint Space Created
-default NR     /          2.03G 2025-08-05 16:53
-
-$ bectl create -r default@origworld
-$ bectl list -s
-
-BE/Dataset/Snapshot  Active Mountpoint Space Created
-
-default
-  zroot/ROOT/default NR     /          2.03G 2025-08-05 16:53
-  default@origworld  -      -          0     2025-08-05 19:21
-
-# It looks weird, but snapshot looks fine:
-zfs list -t snap
-NAME                           USED  AVAIL  REFER  MOUNTPOINT
-zroot/ROOT/default@origworld   256K      -  2.03G  -
-zroot/usr/ports@orig-sources   842M      -   842M  -
-zroot/usr/src@orig-sources     916M      -   916M  -
-```
-
-> WARNING! `bectl create NEW_ENV_NAME` work in 3 steps:
-> 
-> 1. create "Snapshot" from current Environment
-> 2. make New Environment as "Clone" from created "Snapshot"
-> 3. Promote that clone - swaps parent/child relationship.
-> 
-> It is reason, why when you look to dataset/snapshot relationship, it
-> is reversed - thanks to step 3...
-
-Second, I was confused by bectl snapshots but found this important note
-in `man bectl`:
-
-> In that example, zroot/usr has canmount set to off, thus files in /usr
-> typically fall into the boot environment because this dataset is not
-> mounted.  zroot/usr/src is mounted, thus files in /usr/src are not in the
-> boot environment.
-
-In my case there is:
-```shell
-$ zfs list -o name,canmount,mountpoint
-
-NAME                CANMOUNT  MOUNTPOINT
-zroot               on        /zroot
-zroot/ROOT          on        none
-zroot/ROOT/default  noauto    /
-zroot/home          on        /home
-zroot/home/ansible  on        /home/ansible
-zroot/tmp           on        /tmp
-zroot/usr           off       /usr
-zroot/usr/ports     on        /usr/ports
-zroot/usr/src       on        /usr/src              
-zroot/var           off       /var                                        
-zroot/var/audit     on        /var/audit                        
-zroot/var/crash     on        /var/crash
-zroot/var/log       on        /var/log
-zroot/var/mail      on        /var/mail
-zroot/var/tmp       on        /var/tmp
-```
-
-What really confused me, is that there is shown `/usr` under `MOUNTPOINT` - that
-it it  bogus when `CANMOUNT=off`. It seems that `df` shows what is
-really mounted:
-
-```shell
-$ df -h
-
-Filesystem            Size    Used   Avail Capacity  Mounted on
-zroot/ROOT/default     29G    6.1G     23G    21%    /
-devfs                 1.0K      0B    1.0K     0%    /dev
-/dev/gpt/efiboot0     260M    1.3M    259M     1%    /boot/efi
-zroot/home             23G     96K     23G     0%    /home
-zroot/tmp              23G    380K     23G     0%    /tmp
-zroot/var/log          23G    164K     23G     0%    /var/log
-zroot/var/audit        23G     96K     23G     0%    /var/audit
-zroot/var/crash        23G     96K     23G     0%    /var/crash
-zroot/usr/ports        26G    2.4G     23G     9%    /usr/ports
-zroot/var/tmp          23G     96K     23G     0%    /var/tmp
-zroot                  23G     96K     23G     0%    /zroot
-zroot/var/mail         23G    144K     23G     0%    /var/mail
-zroot/usr/src          26G    2.7G     23G    10%    /usr/src
-zroot/home/ansible     23G    452K     23G     0%    /home/ansible
-```
-
-Here we see that `/usr` is not mounted so it should really belong to BE (
-and USED column is definitely increasing for `zroot/ROOT/default`).
-
-So conclusion:
-- `bectl` boot backup should cover also `/usr`  (without `/usr/src` and/or `/usr/ports`
-  as can be seen on `df` output).
-- `zfs list -o ...,mountpoint` output is not relevant if `canmount=off`
-
-
-To build userland we have to invoke:
-
+Now we will install prepared kernel and reboot:
 ```shell
 cd /usr/src
-time make -j`nproc` buildworld
+make -j`nproc` installkernel
 ```
 
-Here are stats (using VM with 6 cores):
+WARNING! After reboot we will run Kernel that is More recent than World (system).
+It sometimes causes malfunction - for example `ipfw` broken (so firewall will be blocked).
+Before reboot ensure that you have Console access so you can fix broken network.
 
-```
->>> World built in 9432 seconds, ncpu: 6, make -j6
-```
-
-Which is:
+Now boot new kernel and prepare `/etc/` for changes (-p) means "pre-world":
 ```shell
-$ echo "Minutes: " $(( 9432 / 60 ))
-
-Minutes:  157
-```
-So around 2.5 hours.
-
-
-Up here there should be no change in system.
-
-> BACKUP your data now!
-
-TODO:
-
-```shell
-# resume installing and booting kernel:
-make -j`nproc` kernel
 reboot
-
 etcupdate -p
+```
+
+Now we will install system (World) - most risky but important! Only after
+following steps your System will again match Kernel version and should fully work
+again:
+
+```shell
 cd /usr/src
 make installworld
-etcupdate -B
+etcupdate -B # I don't understand what -B exactly does...
 reboot
 ```
 
