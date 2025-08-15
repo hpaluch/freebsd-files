@@ -2,6 +2,18 @@
 
 Here is my guide how to use FreeBSD current from "scratch" (from CURRENT ISO)
 
+> [!WARNING]
+> FreeBSD CURRENT is latest *development* branch, so sometimes there are
+> regressions. For example crashing sshd server (exactly `sshd-session` child
+> process on client connection). Fortunately it was quickly resolved, details
+> are on:
+> https://lists.freebsd.org/archives/freebsd-current/2025-August/008407.html
+>
+> Actual fix is in 2 commits:
+> - https://cgit.freebsd.org/src/commit/?id=08f5e06c5e3332de231a664ffd6f7856e9fead07
+> - https://cgit.freebsd.org/src/commit/?id=207cf8773aa7600b340cf673d973add10d9031e5
+
+
 Starting with download on: Tue, 12 Aug 2025
 - page: https://download.freebsd.org/snapshots/amd64/amd64/ISO-IMAGES/15.0/
 - or select mirror from https://docs.freebsd.org/en/books/handbook/mirrors/#mirrors
@@ -347,8 +359,8 @@ tmux # use tmux or local console - build will take lot of time!
 
 script ~/build-world-$(date '+%s').log
 cd /usr/src
-time make -j`nproc` buildworld
-time make -j`nproc` buildkernel
+make buildworld-jobs
+make buildkernel-jobs
 ```
 
 New alternative you can use `TASK-jobs` target (see `/usr/src/UPDATING` at
@@ -515,66 +527,106 @@ Now risky operation - delete-old:
   $ reboot
   ```
 
-# Updating to latest ports
 
-TODO: follow `man portmaster`:
+## Rebuild all ports
 
+Warning! Under some conditions Ports could be completely broken after
+last `make installworld`, for example, `pkg` referencing no longer
+existing `libssl.so.X`, etc. In such case:
+
+Warning! Code below is drastic - do that only if `pkg` or any other major component is broken:
+```shell
+# ensure that you have "prime list" of installed ports:
+# from old command: portmaster --list-origins > ~/installed-port-list
+column ~/installed-port-list
+
+  devel/automake          misc/help2man           devel/py-build          devel/py-wheel044
+  devel/bsddialog         devel/meson             devel/py-flit-core      print/texinfo
+  devel/cmake-core        devel/pkgconf           devel/py-installer      sysutils/tmux
+  devel/git               ports-mgmt/portconfig   devel/py-setuptools
+  devel/gmake             ports-mgmt/portmaster   devel/py-wheel
+
+
+# BACKUP YOUR DATA FIRST!
+
+# delete everything *under* /usr/local and /var/db/pkg
+find /usr/local -mindepth 1 -delete
+find /var/db/pkg -mindepth 1 -delete
+# clean all ports
+cd /usr/ports
+make clean  # is often very slow
+
+# build portmaster (will also build 'pkg'):
+make -C /usr/ports/ports-mgmt/portmaster install
+
+# finally rebuild and reinstall all original packages
+
+portmaster --no-confirm `cat ~/installed-port-list`
 ```
-1. portmaster --list-origins > ~/installed-port-list
-2. Update the ports tree # oops already did that....
-3. portmaster -ty --clean-distfiles
-4. portmaster -Faf
-5. pkg delete -afy
-6. rm -rf /usr/local/lib/compat/pkg
-7. Back up any files in /usr/local you wish to save,
-   such as configuration files in /usr/local/etc
-8. Manually check /usr/local and /var/db/pkg
-to make sure that they are really empty
-9. Install ports-mgmt/pkg and then ports-mgmt/portmaster.
-   Remove both from ~/installed-port-list.
-10. portmaster --no-confirm `cat ~/installed-port-list`
-```
 
-Following: https://docs.freebsd.org/en/books/handbook/ports/#portmaster
+Done. Now your system should be fully consistent, all 3 components:
+
+1. Kernel
+2. World (userspace)
+3. Ports
+
+You can check if Kernel and World match with:
 
 ```shell
-cd /usr/ports/ports-mgmt/portmaster
-make install clean
-portmaster -L
-# do update
-time portmaster -a
+$ uname -UK
+1500059 1500059
 ```
 
-Here is output:
+Both numbers should be same (there is unfortunately not exact match between
+these and ports).
 
-```
-TODO Update
 
-===>>> The following actions were performed:
-	Upgrade of pkg-2.2.0 to pkg-2.2.2
-	Upgrade of bsddialog-1.0.4 to bsddialog-1.0.5
-	Upgrade of expat-2.7.0 to expat-2.7.1
-	Upgrade of pkgconf-2.3.0,1 to pkgconf-2.4.3,1
-	Upgrade of portconfig-0.6.2 to portconfig-0.6.2_1
-	Upgrade of perl5-5.40.2 to perl5-5.40.2_2
-	Upgrade of curl-8.14.1 to curl-8.15.0
-	Upgrade of libffi-3.4.6 to libffi-3.5.1
-	Upgrade of python311-3.11.12_1 to python311-3.11.13
-	Upgrade of py311-flit-core-3.11.0 to py311-flit-core-3.12.0
-	Upgrade of py311-packaging-24.2 to py311-packaging-25.0
-	Upgrade of git-tiny-2.49.0 to git-tiny-2.50.1
-	Installation of devel/py-wheel044@py311 (py311-wheel044-0.44.0_1)
-	Upgrade of py311-setuptools-63.1.0_2 to py311-setuptools-63.1.0_3
-	Upgrade of texinfo-7.1_8,1 to texinfo-7.1_11,1
+# Refreshing CURRENT
 
-      748.15 real      1890.19 user       268.38 sys
+In case of ports you should definitely save selection (before are ports
+updated), using:
+
+```shell
+portmaster --list-origins > ~/installed-port-list
+column ~/installed-port-list
+
+  devel/automake          misc/help2man           devel/py-build          devel/py-wheel044
+  devel/bsddialog         devel/meson             devel/py-flit-core      print/texinfo
+  devel/cmake-core        devel/pkgconf           devel/py-installer      sysutils/tmux
+  devel/git               ports-mgmt/portconfig   devel/py-setuptools
+  devel/gmake             ports-mgmt/portmaster   devel/py-wheel
 ```
 
-TODO: Rebuild all ports:
+Now we can refresh sources directly from Git:
 
-- when there is new system library changes we (may) need to rebuild all installed ports
-- described at the end of `portmaster(8)` manual:
-- https://man.freebsd.org/cgi/man.cgi?query=portmaster&apropos=0&sektion=8&manpath=freebsd-ports&format=html
-- original discussion: https://forums.freebsd.org/threads/rebuilding-all-ports-with-portmaster.51210/
+To refresh Ports source:
+```shell
+cd /usr/ports
+git fetch origin
+git status -bs
 
+  ## main...origin/main [behind 385]
+
+# if there is [behind X] we need to pull changes:
+git merge --ff-only main origin/main
+# recommended - clean all untracked files:
+git clean -fdx
+```
+
+To refresh World and Kernel source:
+```shell
+cd /usr/src
+git fetch origin
+git status -bs
+
+  ## main...origin/main [behind 101]
+
+# if there is [behind X] we need to pull changes:
+git merge --ff-only main origin/main
+# recommended - clean all untracked files:
+git clean -fdx
+```
+
+And now go back to chapter `Updating system (world)` to build/install World and
+Kernel...
 
