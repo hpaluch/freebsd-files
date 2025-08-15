@@ -288,6 +288,15 @@ git branch -v
   * main 5c916ccc133f security/pinentry: Update to 1.3.2
 ```
 
+NOTE: You can get also git revision similar to FreeBSD kernel
+in form `BRANCH-nCOUNT-COMMIT_ID` (for example `main-n279627-08f5e06c5e33`)
+using script [tools/bsd-gitrev.sh](tools/bsd-gitrev.sh) and running it
+in git directory, for example:
+
+```shell
+cd /usr/src && PATH_TO_SCRIPT/bsd-gitrev.sh
+```
+
 NOTE: In my case I actually copied tarballs from another machine (with latest Git sources) to
 avoid overloading FreeBSD.org Git servers.
 
@@ -548,6 +557,8 @@ column ~/installed-port-list
 
 
 # BACKUP YOUR DATA FIRST!
+
+# BEWARE - it will remove even 'tmux'!
 
 # delete everything *under* /usr/local and /var/db/pkg
 find /usr/local -mindepth 1 -delete
