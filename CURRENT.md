@@ -13,6 +13,14 @@ Here is my guide how to use FreeBSD current from "scratch" (from CURRENT ISO)
 > - https://cgit.freebsd.org/src/commit/?id=08f5e06c5e3332de231a664ffd6f7856e9fead07
 > - https://cgit.freebsd.org/src/commit/?id=207cf8773aa7600b340cf673d973add10d9031e5
 
+Basic FreeBSD build dictionary:
+
+- Kernel - operating system kernel
+- World - complete userland - files, executables binaries - basically everything
+  excluding Kernel and excluding `/usr/local/*`
+- Release - installation media ISO (CD/DVD) and IMG (for USB sticks)
+- Ports - additional collection of packages (Ports refers for builds from sources, while Pkg is tool
+  to handle prebuild binary packages)
 
 Starting with download on: Tue, 12 Aug 2025
 - page: https://download.freebsd.org/snapshots/amd64/amd64/ISO-IMAGES/15.0/
@@ -368,68 +376,94 @@ tmux # use tmux or local console - build will take lot of time!
 
 script ~/build-world-$(date '+%s').log
 cd /usr/src
-make buildworld-jobs
-make buildkernel-jobs
-```
-
-New alternative you can use `TASK-jobs` target (see `/usr/src/UPDATING` at
-`20230420:` and `/usr/src/share/mk/jobs.mk` for details):
-
-```shell
-cd /usr/src
-make buildworld-jobs
-# can watch output with: tail -f ../buildworld.log
-
-make buildkernel-jobs
-# can watch output with: tail -f ../buildkernel.log
+make buildworld-jobs && make buildkernel-jobs
 ```
 
 Build statistics:
-```
---- buildworld_epilogue ---
---------------------------------------------------------------
->>> World build completed on Tue Aug 12 20:50:53 CEST 2025
->>> World built in 8695 seconds, ncpu: 8, make -j8
---------------------------------------------------------------
-```
-
-When using new -jobs:
 
 ```shell
-$ cd /usr/src
-$ make buildkernel-jobs
+cd /usr/src
+git branch -v
+
+  * main 959806e0a844 Merge commit 7a66a26658f4 from llvm git (by Fangrui Song):
+make buildworld-jobs && make buildkernel-jobs
+
+## Output:
 
 make: /usr/src/share/mk/jobs.mk:47:
-@ 1755024682 [2025-08-12 20:51:22] Start buildkernel-jobs
-@ 1755024682 [2025-08-12 20:51:22] Start buildkernel -j1.33  log=/usr/buildkernel.log
-@ 1755025506 [2025-08-12 21:05:06] Finished buildkernel-jobs seconds=824
+@ 1756392375 [2025-08-28 16:46:15] Start buildworld-jobs
+@ 1756392375 [2025-08-28 16:46:15] Start buildworld -j1.33  log=/usr/buildworld.log
+@ 1756400868 [2025-08-28 19:07:48] Finished buildworld-jobs seconds=8493
+make: /usr/src/share/mk/jobs.mk:47:
+@ 1756400868 [2025-08-28 19:07:48] Start buildkernel-jobs
+@ 1756400868 [2025-08-28 19:07:48] Start buildkernel -j1.33  log=/usr/buildkernel.log
+@ 1756401600 [2025-08-28 19:20:00] Finished buildkernel-jobs seconds=732
 ```
 
-On 8 cores :
-- World build takes around 2h:24m
-- Kernel build takes around
+On 8 cores:
+- World build takes around 2h:21m
+- Kernel build takes around 12 minutes
+
+Optional: create media distribution set - called "Release" - useful if you plan
+to test latest FreeBSD on less powerful machines (that are not suitable for
+builds but required for specific tasks - for example to test virtualisation or
+graphics card acceleration):
+
+```shell
+cd /usr/src/release
+time make -j`nproc` obj release
+make install DESTDIR=/var/freebsd-snapshot
+find /var/freebsd-snapshot -name '*.iso' -o -name '*.img' -o -name 'CHECKSUM.*' | sort
+```
+
+Noteworthy output:
+
+```
+make output:
+
+Image `/tmp/efiboot.a2g0C7' complete
+--- release ---
+make -C /usr/src/release  -j 8 -J 15,16 release-done
+--- release-done ---
+touch release
+true
+     1015.94 real      3151.43 user       637.53 sys
+
+find output:
+
+/var/freebsd-snapshot/CHECKSUM.SHA256
+/var/freebsd-snapshot/CHECKSUM.SHA512
+/var/freebsd-snapshot/FreeBSD-15.0-PRERELEASE-amd64-bootonly.iso
+/var/freebsd-snapshot/FreeBSD-15.0-PRERELEASE-amd64-disc1.iso
+/var/freebsd-snapshot/FreeBSD-15.0-PRERELEASE-amd64-memstick.img
+/var/freebsd-snapshot/FreeBSD-15.0-PRERELEASE-amd64-mini-memstick.img
+```
+
 
 Now you should definitely backup system, at least with `bectl`:
+
 ```shell
-bectl create buildworld
-bectl list
+bectl create preinstall
+bectl list -c creation
 
   BE         Active Mountpoint Space Created
-  buildworld -      -          8K    2025-08-12 21:06
-  default    NR     /          762M  2025-08-12 16:59
-  pristine   -      -          320K  2025-08-12 17:05
+  default    NR     /          7.96G 2025-08-12 16:59
+  pristine   -      -          261M  2025-08-12 17:05
+  OK-1500059 -      -          1.04G 2025-08-15 17:29
+  OK-1500060 -      -          668K  2025-08-15 21:11
+  preinstall -      -          728K  2025-08-28 19:35
 ```
 
 Note your current kernel and userland versions (soon will be different):
 ```shell
 $ uname -v
 
-FreeBSD 15.0-CURRENT #0 main-n279407-02f394281fd6: Thu Aug  7 11:11:50 UTC 2025 \
-     root@releng3.nyi.freebsd.org:/usr/obj/usr/src/amd64.amd64/sys/GENERIC
+FreeBSD 15.0-PRERELEASE #0 main-n279627-08f5e06c5e33: \
+  Fri Aug 15 20:26:42 CEST 2025     root@fbsd-next4:/usr/obj/usr/src/amd64.amd64/sys/GENERIC
 
 $ uname -UK # print both Userland and Kernel version:
 
-1500056 1500056
+1500060 1500060
 ```
 
 So far they are same (so there is no confusion which number is Kernel and which number is Userland).
@@ -449,21 +483,20 @@ WARNING! After reboot we will run Kernel that is More recent than World (system)
 It sometimes causes malfunction - for example `ipfw` broken (so firewall will be blocked).
 Before reboot ensure that you have Console access so you can fix broken network.
 
-Now boot new kernel and prepare `/etc/` for changes (-p) means "pre-world":
+Now boot new kernel:
 ```shell
 reboot
-etcupdate -p
 ```
 
 Notice inconsistent system (expected) - Kernel version different from Userland:
 ```shell
 $ uname -U
 
-1500056
+1500060
 
 $ uname -K
 
-1500059
+1500063
 ```
 
 Now we will install system (World) - most risky but important! Only after
@@ -472,12 +505,13 @@ again:
 
 ```shell
 cd /usr/src
+etcupdate -p    # pre-update
 make installworld
-etcupdate -B # I don't understand what -B exactly does...
+etcupdate -B    # post-update
 reboot
 ```
 
-Here is system status on Aug 12, 2025:
+Here is system status on Aug 28, 2025:
 
 ```shell
 $ freebsd-version
@@ -486,53 +520,40 @@ $ freebsd-version
 
 $ uname -v
 
-FreeBSD 15.0-PRERELEASE #0 main-n279550-4a94dee2a497: Tue Aug 12 21:04:52 CEST 2025 \
+FreeBSD 15.0-PRERELEASE #0 main-n279929-959806e0a844: Thu Aug 28 19:19:51 CEST 2025 \
      root@fbsd-next4:/usr/obj/usr/src/amd64.amd64/sys/GENERIC
 
 $ Userland and Kernel should have same version:
 
 $ uname -UK
 
-1500059 1500059
+1500063 1500063
 
 $ git -C /usr/src branch -vv
 
-* main 4a94dee2a497 [origin/main] ObsoleteFiles: both gssapi/gssapi.h and gssapi.h existed
+* main 959806e0a844 [origin/main] Merge commit 7a66a26658f4 from llvm git (by Fangrui Song):
 ```
 
 Now risky operation - delete-old:
 - first make system backup:
   ```shell
-  bectl create installworld
+  bectl create predelete
   ```
-- now dangerous cleanup:
+- now dangerous cleanup (using batch mode with `BATCH_DELETE_OLD_FILES=1`):
 
   ```shell
-  $ make -C /usr/src delete-old
-  
+  $ make -C /usr/src delete-old BATCH_DELETE_OLD_FILES=1
+
   >>> Removing old files (only deletes safe to delete libs)
-  remove /usr/include/openssl/asn1_mac.h? y
-  remove /usr/sbin/nvmfd? y
-  remove /usr/sbin/rpc.ypupdated? y
-  remove /usr/share/man/man8/nvmfd.8.gz? y
-  >>> Old files removed
-  >>> Removing old directories
-  >>> Old directories removed
-  To remove old libraries run 'make delete-old-libs'.
-  
-  $ make -C /usr/src delete-old-libs
-  
+  /usr/lib/libgssapi.so
+  ... manual pages deletion omitted ..
+
+  $ make -C /usr/src delete-old-libs BATCH_DELETE_OLD_FILES=1
+
+
   >>> Removing old libraries
-  Please be sure no application still uses those libraries, else you
-  can not start such an application. Consult UPDATING for more
-  information regarding how to cope with the removal/revision bump
-  of a specific library.
-  remove /lib/libcrypto.so.30? y
-  remove /usr/lib/libgssapi.a? y
-  remove /usr/lib/libgssapi.so.10? y
-  remove /usr/lib/libssl.so.30? y
-  >>> Old libraries removed
-  
+  ... no library deleted this time...
+
   $ reboot
   ```
 
@@ -563,16 +584,16 @@ column ~/installed-port-list
 # delete everything *under* /usr/local and /var/db/pkg
 find /usr/local -mindepth 1 -delete
 find /var/db/pkg -mindepth 1 -delete
-# clean all ports
-cd /usr/ports
-make clean  # is often very slow
-
-# build portmaster (will also build 'pkg'):
-make -C /usr/ports/ports-mgmt/portmaster install
-
+# clean skipped because we did that with "git clean -fdx" earlier
 # finally rebuild and reinstall all original packages
 
-portmaster --no-confirm `cat ~/installed-port-list`
+# 1st build manually portmaster
+make -C /usr/ports/ports-mgmt/portmaster install
+
+# next use it rebuild all packages from saved list:
+time portmaster --no-confirm `cat ~/installed-port-list`
+
+
 ```
 
 Done. Now your system should be fully consistent, all 3 components:
@@ -608,35 +629,32 @@ column ~/installed-port-list
   devel/gmake             ports-mgmt/portmaster   devel/py-wheel
 ```
 
-Now we can refresh sources directly from Git:
+Now we can refresh Ports and World sources directly from Git:
 
-To refresh Ports source:
+I use following script `/root/refresh-git.sh` with contents:
+
 ```shell
-cd /usr/ports
-git fetch origin
-git status -bs
-
-  ## main...origin/main [behind 385]
-
-# if there is [behind X] we need to pull changes:
-git merge --ff-only main origin/main
-# recommended - clean all untracked files:
-git clean -fdx
+#!/bin/sh
+set -xeuo pipefail
+for i in /usr/ports /usr/src
+do
+        cd $i
+        git fetch origin
+        git status -bs
+        git merge --ff-only main origin/main
+        git clean -fdx
+        git status -bs
+done
+exit 0
 ```
 
-To refresh World and Kernel source:
+Finally cleanup `/usr/obj` - use ZFS rollback of snapshot or simply:
+
 ```shell
-cd /usr/src
-git fetch origin
-git status -bs
-
-  ## main...origin/main [behind 101]
-
-# if there is [behind X] we need to pull changes:
-git merge --ff-only main origin/main
-# recommended - clean all untracked files:
-git clean -fdx
+find /usr/obj -mindepth 1 -delete
 ```
+
+And run it. It should finish without errors.
 
 And now go back to chapter `Updating system (world)` to build/install World and
 Kernel...
