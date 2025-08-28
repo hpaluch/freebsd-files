@@ -612,6 +612,19 @@ $ uname -UK
 Both numbers should be same (there is unfortunately not exact match between
 these and ports).
 
+I typically create backup of this environment using commands like (prefix "OK" with version suffix):
+
+```shell
+bectl create OK-$(uname -U)
+
+BE         Active Mountpoint Space Created
+OK-1500059 -      -          1.04G 2025-08-15 17:29
+OK-1500060 -      -          668K  2025-08-15 21:11
+OK-1500063 -      -          8K    2025-08-28 21:04
+default    NR     /          7.96G 2025-08-12 16:59
+preinstall -      -          728K  2025-08-28 19:35
+pristine   -      -          261M  2025-08-12 17:05
+```
 
 # Refreshing CURRENT
 
